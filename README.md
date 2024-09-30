@@ -1,2 +1,77 @@
-# BIOSCAN_QC
+# BIOSCAN QC
 This script generates a BIOSCAN QC report and filters one consensus sequence per sample using output files from mBRAVE. It is designed specifically for processing the Wellcome Sanger Institute BIOSCAN data.
+## Installation
+No installation is required when running this script on Farm.
+## Usage
+To use the script, follow these steps:<br>Submit an interactive job request:<br>
+```bash
+bsub -Is -n 4 -R "select[mem>2000] rusage[mem=2000] span[hosts=1]" -M 2000 -G team222 bash
+```
+Set the batch number [the batch number should match the name of the input data directory]:<br>
+```bash
+batch="batch18"
+```
+Run the script:<br>
+```bash
+export batch_path="/nfs/users/nfs_a/aw43/aw43/2024_07_bioscan_qc/input/mbrave_batch_data/${batch}/"
+export output_path="/nfs/users/nfs_a/aw43/aw43/2024_07_bioscan_qc/input/output/qc_reports/${batch}/"
+export batch_no="${batch}"
+module load HGI/softpack/users/aw43/aw43_bioscan-aw43_bioscan-4-aw43_bioscan-4/1
+Rscript -e "rmarkdown::render(input = '/lustre/scratch126/tol/teams/lawniczak/users/aw43/2024_07_bioscan_qc/code/QCBioscan.Rmd', output_format = 'html_document', output_dir = Sys.getenv('output_path'))"
+```
+## Input
+The script requires the following files from the mBRAVE batch output:
+<li>sample_stats.txt 
+</li>
+<li>control_pos_stats.txt
+</li>
+<li>control_neg_stats.txt
+</li>
+<li>consensusseq.fas
+</li>
+<li>consensusseq_network.tsv
+</li>
+<br>
+The fasta file should contain all sequences, not just the consensus sequences. No filtering should be applied when downloading data from mBRAVE. The names of the downloaded files should not be altered and should contain the batch number. <br><br>
+Additionally, the script automatically loads a .csv file with UMI indices from the Farm directory. <br>
+
+## Output
+The script generates the following output files:
+- QCBioscan.html: Main QC report with plots, tables, and statistics for the sequencing run.
+- filtered_metadata.csv: Metadata for samples that passed the QC. This file also contains the quality scores that each sample gets assigned [see below].
+- filtered_sequences.fasta: Consensus sequences for samples that passed the QC. All samples from the metadata are here, despite the quality scores. 
+- read_summary_metadata.csv: Summary statistics for the sequencing run. Further the tables can be combined across the batches to calculate sequencing statistics. 
+- unique_secondary_sequences.csv: Table of secondary sequences not found elsewhere on the plate, retained for further secondary sequence searches.
+- conflicts_family.csv and conflicts_order.csv: Tables of secondary sequences with good read support (> 100 reads or 50% or more of the primary sequence read), for further secondary sequence analysis.
+- tardigrada_nematoda_rotifera.csv and wolbachia.csv: Non-Arthropod sequences retained for further exploration. These files are not filtered for number of reads nor contain quality categories. These should be processed further if required.
+
+## Documentation
+The QC process is divided into parts:<br><br>
+1. Assessment of the sequencing run<br>
+The script evaluates the quality of the sequencing run by providing statistics for both control and sample data and quality assessments of the plates.<br>
+Plates are flagged for further evaluation if their read counts are insufficient compared to positive controls. The 5% of positive and negative controls with the lowest performance are also identified. The QC report provides an overview of sequencing performance and highlights plates of lower than expected quality. However, plates are not automatically eliminated. Highlighted plates should be examined and re-sequences if required. <br><br>
+2. Assessment of sequence conflicts and contaminants<br>
+The script identifies and assesses potential sequence conflicts and contaminants:<br><br>
+Cross-Contamination: Maps the distribution of positive control reads across plates and identifies potential cross-contamination sources in the negative controls. This step shows how far on a plate the potential contamination could spread. <br><br>
+Conflicting Sequences: Identifies conflicts within a sample where secondary sequences have > 100 reads or 50% or more of the primary sequence read and returns tables listing conflicts at the family and order levels. These tables can be used to recognise samples that may have two large insects plated together (partner’s error) and true symbiont/parasite interactions.
+Unique Secondary Sequences: Searches for secondary sequences with more than 50 reads that are not found elsewhere on the plate, indicating a potential true signal. These tables can be used to recognise samples that may have two large insects plated together (partner’s error) and true symbiont/parasite interactions.
+Shorter Sequences: Identifies sequences shorter than expected within those without assigned taxonomy and replaces them with the closest matching longer sequence within the sample (on average 100 bp longer; Levenshtein distance < 150). <br><br>
+Non-Arthropod Sequences: Replaces all primary non-Arthropod sequences with the Arthropod sequence with the highest read count. Wolbachia, Tardigrades, Rotifers, and Nematodes are retained in the output for further investigation. <br><br>
+Quality Scores: Categorises all the retained samples into categories depending on read count and the level of secondary sequence contamination. 
+
+| Score | Category       | No. reads in primary | Secondary sequence assessment                                |
+|-------|----------------|----------------------|--------------------------------------------------------------|
+| 1     | Perfect        | > 200                | No secondary sequence with more than 3 reads                 |
+| 2     | Almost perfect | 100-200              | No secondary sequence with more than 3 reads                 |
+| 3     | Very good      | > 200                | At least one secondary sequence with more than 3 reads       |
+| 4     | Good           | < 100                | No secondary sequence with more than 3 reads                 |
+| 5     | Ok             | 100-200              | At least one secondary sequence with more than 3 reads       |
+| 6     | Almost ok      | < 100                | At least one secondary sequence with more than 3 reads       |
+| 7     | Need attention | < 50                 | Conflicts detected in previous steps                         |
+| 8     | Maybe exclude  | < 50                 | At least one secondary sequence with more than 3 reads       |
+| 10    | Exclude        | < 5                  | At least one secondary sequence with more than 3 reads       |
+
+3. Final assessments and plots <br>
+This part contains tables with percentages of retained samples per partner, partner plate, and UMI plate. <br>
+Further, all partner plates and UMI plates are displayed as heatmaps. <br>
+There’s also a table of failed negative controls that can potentially contain insect samples (partner’s error) and may need to be examined. 
