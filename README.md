@@ -62,15 +62,14 @@ Quality Scores: Categorises all the retained samples into categories depending o
 
 | Score | Category       | No. reads in primary | Secondary sequence assessment                                |
 |-------|----------------|----------------------|--------------------------------------------------------------|
-| 1     | Perfect        | > 200                | No secondary sequence with more than 3 reads                 |
-| 2     | Almost perfect | 100-200              | No secondary sequence with more than 3 reads                 |
-| 3     | Very good      | > 200                | At least one secondary sequence with more than 3 reads       |
-| 4     | Good           | < 100                | No secondary sequence with more than 3 reads                 |
-| 5     | Ok             | 100-200              | At least one secondary sequence with more than 3 reads       |
-| 6     | Almost ok      | < 100                | At least one secondary sequence with more than 3 reads       |
-| 7     | Need attention | < 50                 | Conflicts detected in previous steps                         |
-| 8     | Maybe exclude  | < 50                 | At least one secondary sequence with more than 3 reads       |
-| 10    | Exclude        | < 5                  | At least one secondary sequence with more than 3 reads       |
+| <b>1</b>     | <i>Perfect</i>        | > 200                | No secondary sequence with more than 3 reads                 |
+| <b>2</b>     | <i>Almost perfect</i> | 100-200              | No secondary sequence with more than 3 reads                 |
+| <b>3</b>     | <i>Very good</i>      | > 200                | At least one secondary sequence with more than 3 reads       |
+| <b>4</b>     | <i>Good</i>           | < 100                | No secondary sequence with more than 3 reads                 |
+| <b>5</b>     | <i>Ok</i>             | 100-200              | At least one secondary sequence with more than 3 reads       |
+| <b>6</b>     | <i>Almost ok</i>      | < 100                | At least one secondary sequence with more than 3 reads       |
+| <b>7</b>     | <i>Need attention</i> | < 50                 | Conflicts detected in previous steps                         |
+| <b>8</b>     | <i>Exclude</i>        | < 5                  | At least one secondary sequence with more than 3 reads       |
 
 3. Final assessments and plots <br>
 This part contains tables with percentages of retained samples per partner, partner plate, and UMI plate. <br>
