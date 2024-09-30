@@ -1547,7 +1547,7 @@ fasta_file_path <- paste(output_path, "filtered_sequences_", batch_no, ".fasta",
 writeXStringSet(sequences_filtered, filepath = fasta_file_path)
 
 # Filtered fastas 
-qc_tsv_arthropod_primaryBOLD <- qc_tsv_arthropod_primary %>% filter(str_detect(decision_category, "PASS"))
+qc_tsv_arthropod_primaryBOLD <- qc_tsv_arthropod_primary # %>% filter(category_decision != "NO")
 sequences_filtered_BOLDfiltered <- DNAStringSet(qc_tsv_arthropod_primaryBOLD$sequence)
 names(sequences_filtered_BOLDfiltered) <- qc_tsv_arthropod_primaryBOLD$pid # What should be the name?? 
 # Save the fasta file 
@@ -1614,7 +1614,6 @@ knitr::kable(retained_partners, format = "html") %>%
 ### Samples to examine manually / may be flagged by BOLD 
 ```{r collecting_samples_to_Examine_manually}
 # Everything else is now saved in seperate data frames
-
 if (length(non_bos_contaminated_n_cont) > 0) { 
   cat("Failed negative controls [2%] with contamination other than Bovidae:\n\n", 
       paste(c(non_bos_contaminated_n_cont, "\nThese samples may have insects in them!"), 
