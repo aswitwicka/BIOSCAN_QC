@@ -22,6 +22,7 @@ Rscript -e "rmarkdown::render(input = '/lustre/scratch126/tol/teams/lawniczak/us
 ```
 ## Input
 The script requires the following files from the mBRAVE batch output:
+<i>
 <li>sample_stats.txt 
 </li>
 <li>control_pos_stats.txt
@@ -32,19 +33,20 @@ The script requires the following files from the mBRAVE batch output:
 </li>
 <li>consensusseq_network.tsv
 </li>
+</i>
 <br>
 The fasta file should contain all sequences, not just the consensus sequences. No filtering should be applied when downloading data from mBRAVE. The names of the downloaded files should not be altered and should contain the batch number. <br><br>
 Additionally, the script automatically loads a .csv file with UMI indices from the Farm directory. <br>
 
 ## Output
 The script generates the following output files:
-- QCBioscan.html: Main QC report with plots, tables, and statistics for the sequencing run.
-- filtered_metadata.csv: Metadata for samples that passed the QC. This file also contains the quality scores that each sample gets assigned [see below].
-- filtered_sequences.fasta: Consensus sequences for samples that passed the QC. All samples from the metadata are here, despite the quality scores. 
-- read_summary_metadata.csv: Summary statistics for the sequencing run. Further the tables can be combined across the batches to calculate sequencing statistics. 
-- unique_secondary_sequences.csv: Table of secondary sequences not found elsewhere on the plate, retained for further secondary sequence searches.
-- conflicts_family.csv and conflicts_order.csv: Tables of secondary sequences with good read support (> 100 reads or 50% or more of the primary sequence read), for further secondary sequence analysis.
-- tardigrada_nematoda_rotifera.csv and wolbachia.csv: Non-Arthropod sequences retained for further exploration. These files are not filtered for number of reads nor contain quality categories. These should be processed further if required.
+- <i>QCBioscan.html</i><br>Main QC report with plots, tables, and statistics for the sequencing run.
+- <i>filtered_metadata.csv</i><br>Metadata for samples that passed the QC. This file also contains the quality scores that each sample gets assigned [see below].
+- <i>filtered_sequences.fasta</i><br>Consensus sequences for samples that passed the QC. All samples from the metadata are here, despite the quality scores. 
+- <i>read_summary_metadata.csv</i><br>Summary statistics for the sequencing run. Further the tables can be combined across the batches to calculate sequencing statistics. 
+- <i>unique_secondary_sequences.csv</i><br>Table of secondary sequences not found elsewhere on the plate, retained for further secondary sequence searches.
+- <i>conflicts_family.csv and conflicts_order.csv</i><br>Tables of secondary sequences with good read support (> 100 reads or 50% or more of the primary sequence read), for further secondary sequence analysis.
+- <i>tardigrada_nematoda_rotifera.csv and wolbachia.csv</i><br>Non-Arthropod sequences retained for further exploration. These files are not filtered for number of reads nor contain quality categories. These should be processed further if required.
 
 ## Documentation
 The QC process is divided into parts:<br><br>
