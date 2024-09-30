@@ -74,6 +74,7 @@ Quality Scores: Categorises all the retained samples into categories depending o
 | <b>6</b>     | <i>Almost ok</i>      | < 100                | At least one secondary sequence with more than 3 reads       |
 | <b>7</b>     | <i>Need attention</i> | < 50                 | Conflicts detected in previous steps                         |
 | <b>8</b>     | <i>Exclude</i>        | < 5                  | At least one secondary sequence with more than 3 reads       |
+| <b>9</b>     | <i>Replaced</i>       | NA                   | NA                                                           |
 
 3. <i>Final assessments and plots </i><br>
 This part contains tables with percentages of retained samples per partner, partner plate, and UMI plate. <br>
