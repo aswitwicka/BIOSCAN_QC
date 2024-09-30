@@ -48,10 +48,10 @@ The script generates the following output files:
 
 ## Documentation
 The QC process is divided into parts:<br><br>
-1. Assessment of the sequencing run<br>
+1. <i>Assessment of the sequencing run</i><br>
 The script evaluates the quality of the sequencing run by providing statistics for both control and sample data and quality assessments of the plates.<br>
 Plates are flagged for further evaluation if their read counts are insufficient compared to positive controls. The 5% of positive and negative controls with the lowest performance are also identified. The QC report provides an overview of sequencing performance and highlights plates of lower than expected quality. However, plates are not automatically eliminated. Highlighted plates should be examined and re-sequences if required. <br><br>
-2. Assessment of sequence conflicts and contaminants<br>
+2. <i>Assessment of sequence conflicts and contaminants</i><br>
 The script identifies and assesses potential sequence conflicts and contaminants:<br><br>
 Cross-Contamination: Maps the distribution of positive control reads across plates and identifies potential cross-contamination sources in the negative controls. This step shows how far on a plate the potential contamination could spread. <br><br>
 Conflicting Sequences: Identifies conflicts within a sample where secondary sequences have > 100 reads or 50% or more of the primary sequence read and returns tables listing conflicts at the family and order levels. These tables can be used to recognise samples that may have two large insects plated together (partner’s error) and true symbiont/parasite interactions.
@@ -71,7 +71,7 @@ Quality Scores: Categorises all the retained samples into categories depending o
 | <b>7</b>     | <i>Need attention</i> | < 50                 | Conflicts detected in previous steps                         |
 | <b>8</b>     | <i>Exclude</i>        | < 5                  | At least one secondary sequence with more than 3 reads       |
 
-3. Final assessments and plots <br>
+3. <i>Final assessments and plots </i><br>
 This part contains tables with percentages of retained samples per partner, partner plate, and UMI plate. <br>
 Further, all partner plates and UMI plates are displayed as heatmaps. <br>
 There’s also a table of failed negative controls that can potentially contain insect samples (partner’s error) and may need to be examined. 
