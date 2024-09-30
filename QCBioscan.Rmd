@@ -1227,12 +1227,12 @@ most_similar_sequences_display <- most_similar_sequences %>% # filter(pid %in% s
                 f_primary, g_primary, s_primary, otu_primary, seq_length, distance) %>% arrange(Contig_ID) %>% arrange(pid)
 # Summary
 cat(paste("Number of samples with no taxonomy assigned that will be replaced with the secondary contig based on the sequence similarity:",
-          length(unique(most_similar_sequences_display$pid)), "\nSee the table below.",
+          length(unique(most_similar_sequences_display$pid)), #"\nSee the table below.",
           "\nOther sequences with no taxonomy assigned to the primary contig will remain unchanged."))
-knitr::kable(most_similar_sequences_display, 
-             col.names = c("Sample", "Contig", "Read count", "Sequence similarity", "Phylum", "Class", "Order", "Family", "Genus", "Species", "OTU", "Sequence Length", "Levenshtein Distance"), 
-             format = "html") %>%
-  kableExtra::kable_styling(full_width = TRUE, position = "center")
+# knitr::kable(most_similar_sequences_display, 
+#              col.names = c("Sample", "Contig", "Read count", "Sequence similarity", "Phylum", "Class", "Order", "Family", "Genus", "Species", "OTU", "Sequence Length", "Levenshtein Distance"), 
+#              format = "html") %>%
+#   kableExtra::kable_styling(full_width = TRUE, position = "center")
 # Replace the data 
 keep_no_tax <- most_similar_sequences %>% filter(assignment == "secondary") %>% dplyr::select(-distance)
 keep_no_tax$assignment <- "primary"
@@ -1437,25 +1437,25 @@ cat(paste(100-(nrow(qc_tsv_arthropod_primary)*100/total_sample_number), "% OF SA
 qc_tsv_arthropod_primary <- qc_tsv_arthropod_primary %>%
   mutate(category = case_when(
     pid %in% keep_no_tax$pid ~ 9,
-    pid %in% c(conflicting_arthropods_order$pid, conflicting_arthropods_family$pid) & rep_count_primary < 400 ~ 7,
     rep_count_primary <= 5 & no_conflicting_sequences >= 3 ~ 8,
-    rep_count_primary > 200 & no_conflicting_sequences < 3 ~ 1,
-    rep_count_primary >= 100 & rep_count_primary <= 200 & no_conflicting_sequences < 3 ~ 2,
-    rep_count_primary < 100 & no_conflicting_sequences < 3 ~ 3,
-    rep_count_primary > 200 & no_conflicting_sequences >= 3 ~ 4,
-    rep_count_primary >= 100 & rep_count_primary <= 200 & no_conflicting_sequences >= 3 ~ 5,
-    rep_count_primary < 100 & no_conflicting_sequences >= 3 ~ 6,
+    pid %in% c(conflicting_arthropods_order$pid, conflicting_arthropods_family$pid) ~ 7,
+    rep_count_primary > 200 & no_conflicting_sequences < 10 ~ 1,
+    rep_count_primary >= 100 & rep_count_primary <= 200 & no_conflicting_sequences < 10 ~ 2,
+    rep_count_primary < 100 & no_conflicting_sequences < 10 ~ 3,
+    rep_count_primary > 200 & no_conflicting_sequences >= 10 ~ 4,
+    rep_count_primary >= 100 & rep_count_primary <= 200 & no_conflicting_sequences >= 10 ~ 5,
+    rep_count_primary < 100 & no_conflicting_sequences >= 10 ~ 6,
     TRUE ~ NA_real_  
   )) %>%
   mutate(category_explanation = case_when(
-    category == 1 ~ "Over 200 primary reads and no secondary sequence with more than 3 reads",
-    category == 2 ~ "100 - 200 primary reads and no secondary sequence with more than 3 reads",
-    category == 3 ~ "Fewer than 100 primary reads and no secondary sequence with more than 3 reads",
-    category == 4 ~ "Over 200 primary reads and secondary sequence with more than 3 reads",
-    category == 5 ~ "100 - 200 primary reads and secondary sequence with more than 3 reads",
-    category == 6 ~ "Fewer than 100 primary reads and secondary sequence with more than 3 reads",
-    category == 7 ~ "Fewer than 50 reads, family or order level conflicts detected",
-    category == 8 ~ "Fewer than 5 reads and secondary sequence with more than 3 reads",
+    category == 1 ~ "Over 200 primary reads and no secondary sequence with 10 or more reads",
+    category == 2 ~ "100 - 200 primary reads and no secondary sequence with 10 or more reads",
+    category == 3 ~ "Fewer than 100 primary reads and no secondary sequence with 10 or more reads",
+    category == 4 ~ "Over 200 primary reads and secondary sequence with 10 or more readss",
+    category == 5 ~ "100 - 200 primary reads and secondary sequence with 10 or more reads",
+    category == 6 ~ "Fewer than 100 primary reads and secondary sequence with 10 or more reads",
+    category == 7 ~ "Family or order level conflicts detected [50% or more reads]",
+    category == 8 ~ "Fewer than 5 reads and secondary sequence with 3 or more reads",
     category == 9 ~ "Replaced by secondary sequence",
     TRUE ~ NA_character_  # Default case
   )) %>%
@@ -1478,6 +1478,10 @@ summary_merge <- summary_merge %>%
     TRUE ~ NA_character_  # Default case
   ))
 knitr::kable(summary_merge %>% arrange(Category), format = "html") %>% 
+  kableExtra::kable_styling(full_width = FALSE, position = "center")
+
+knitr::kable(table(qc_tsv_arthropod_primary$category_decision) %>% as.data.frame(), 
+             col.names = c("Decision category", "Number of samples"), format = "html") %>%
   kableExtra::kable_styling(full_width = FALSE, position = "center")
 
 # Update batch metadata 
@@ -1611,7 +1615,7 @@ knitr::kable(retained_partners, format = "html") %>%
 
 ```{r}
 ```
-### Samples to examine manually / may be flagged by BOLD 
+### Samples to examine manually
 ```{r collecting_samples_to_Examine_manually}
 # Everything else is now saved in seperate data frames
 if (length(non_bos_contaminated_n_cont) > 0) { 
