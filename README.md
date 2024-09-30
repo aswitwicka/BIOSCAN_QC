@@ -77,8 +77,8 @@ Quality Scores: Categorises all the retained samples into categories depending o
 | <b>1</b>     | <i>Perfect</i>        | > 200                | No secondary sequence with 10 or more reads           |YES |
 | <b>2</b>     | <i>Almost perfect</i> | 100-200              | No secondary sequence with 10 or more reads           |YES |
 | <b>3</b>     | <i>Very good</i>      | < 100                | No secondary sequence with 10 or more reads           |YES |
-| <b>4</b>     | <i>Good</i>           | > 200                | At least one secondary sequence with 10 or more reads |YES |
-| <b>5</b>     | <i>Ok</i>             | 100-200              | At least one secondary sequence with 10 or more reads |YES |
+| <b>4</b>     | <i>Good</i>           | > 200                | At least one secondary sequence with 10 or more reads |MAYBE |
+| <b>5</b>     | <i>Ok</i>             | 100-200              | At least one secondary sequence with 10 or more reads |MAYBE |
 | <b>6</b>     | <i>Almost ok</i>      | < 100                | At least one secondary sequence with 10 or more reads |MAYBE |
 | <b>7</b>     | <i>Need attention</i> | NA                | Conflicts detected in previous steps                     |MAYBE |
 | <b>8</b>     | <i>Exclude</i>        | < 5                  | At least one secondary sequence with 3 or reads       |NO |
