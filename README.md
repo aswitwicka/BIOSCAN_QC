@@ -1,6 +1,9 @@
 # BIOSCAN QC
 This script generates a BIOSCAN QC report and filters one consensus sequence per sample using output files from mBRAVE. It is designed specifically for processing the Wellcome Sanger Institute BIOSCAN data. <br> <br> 
-![QC Report](./2024Sep_QC.png)
+<p align="center">
+  <img src="./2024Sep_QC2.png" alt="QC Repor"/>
+</p>
+
 ## Installation
 No installation is required when running this script on Farm.
 ## Usage
@@ -20,6 +23,11 @@ export batch_no="${batch}"
 module load HGI/softpack/users/aw43/aw43_bioscan-aw43_bioscan-4-aw43_bioscan-4/1
 Rscript -e "rmarkdown::render(input = '/lustre/scratch126/tol/teams/lawniczak/users/aw43/2024_07_bioscan_qc/code/QCBioscan.Rmd', output_format = 'html_document', output_dir = Sys.getenv('output_path'))"
 ```
+<br>
+<p align="center">
+  <img src="./2024Sep_QC.png" alt="QC Repor"/>
+</p>
+
 ## Input
 The script requires the following files from the mBRAVE batch output:
 <i>
