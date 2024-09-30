@@ -64,17 +64,17 @@ Shorter Sequences: Identifies sequences shorter than expected within those witho
 Non-Arthropod Sequences: Replaces all primary non-Arthropod sequences with the Arthropod sequence with the highest read count. Wolbachia, Tardigrades, Rotifers, and Nematodes are retained in the output for further investigation. <br><br>
 Quality Scores: Categorises all the retained samples into categories depending on read count and the level of secondary sequence contamination. The main QC report also contains a table showing how many samples were clasified into which category. This information is also save in read_summary_metadata.csv file.
 
-| Score | Category       | No. reads in primary | Secondary sequence assessment                                |
-|-------|----------------|----------------------|--------------------------------------------------------------|
-| <b>1</b>     | <i>Perfect</i>        | > 200                | No secondary sequence with more than 3 reads                 |
-| <b>2</b>     | <i>Almost perfect</i> | 100-200              | No secondary sequence with more than 3 reads                 |
-| <b>3</b>     | <i>Very good</i>      | < 100                | No secondary sequence with more than 3 reads                 |
-| <b>4</b>     | <i>Good</i>           | > 200                | At least one secondary sequence with more than 3 reads       |
-| <b>5</b>     | <i>Ok</i>             | 100-200              | At least one secondary sequence with more than 3 reads       |
-| <b>6</b>     | <i>Almost ok</i>      | < 100                | At least one secondary sequence with more than 3 reads       |
-| <b>7</b>     | <i>Need attention</i> | < 50                 | Conflicts detected in previous steps                         |
-| <b>8</b>     | <i>Exclude</i>        | < 5                  | At least one secondary sequence with more than 3 reads       |
-| <b>9</b>     | <i>Replaced</i>       | NA                   | NA                                                           |
+| Score | Category       | No. reads in primary | Secondary sequence assessment                                | Decision                                |
+|-------|----------------|----------------------|--------------------------------------------------------------|-----------------------------------------|
+| <b>1</b>     | <i>Perfect</i>        | > 200                | No secondary sequence with 10 or more reads           |YES |
+| <b>2</b>     | <i>Almost perfect</i> | 100-200              | No secondary sequence with 10 or more reads           |YES |
+| <b>3</b>     | <i>Very good</i>      | < 100                | No secondary sequence with 10 or more reads           |YES |
+| <b>4</b>     | <i>Good</i>           | > 200                | At least one secondary sequence with 10 or more reads |YES |
+| <b>5</b>     | <i>Ok</i>             | 100-200              | At least one secondary sequence with 10 or more reads |YES |
+| <b>6</b>     | <i>Almost ok</i>      | < 100                | At least one secondary sequence with 10 or more reads |MAYBE |
+| <b>7</b>     | <i>Need attention</i> | NA                | Conflicts detected in previous steps                     |MAYBE |
+| <b>8</b>     | <i>Exclude</i>        | < 5                  | At least one secondary sequence with 3 or reads       |NO |
+| <b>9</b>     | <i>Replaced</i>       | NA                   | NA                                                    |YES |
 
 3. <i>Final assessments and plots </i><br>
 This part contains tables with percentages of retained samples per partner, partner plate, and UMI plate. <br>
