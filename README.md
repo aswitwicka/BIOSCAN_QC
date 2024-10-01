@@ -48,16 +48,16 @@ The script generates the following output files:
 - <i>filtered_metadata.csv</i><br>Metadata for samples that passed the QC. This file also contains the quality scores that each sample gets assigned [see below].
 - <i>filtered_sequences.fasta</i><br>Consensus sequences for samples that passed the QC. All samples from the metadata are here, despite the quality scores. 
 - <i>read_summary_metadata.csv</i><br>Summary statistics for the sequencing run. Further the tables can be combined across the batches to calculate sequencing statistics. 
-- <i>unique_secondary_sequences.csv</i><br>Table of secondary sequences not found elsewhere on the plate, retained for further secondary sequence analysis [parasites/symbionts].
-- <i>conflicts_family.csv and conflicts_order.csv</i><br>Tables of secondary sequences with good read support (> 100 reads or 50% or more of the primary sequence read), for further secondary sequence analysis [parasites/symbionts].
-- <i>tardigrada_nematoda_rotifera.csv and wolbachia.csv</i><br>Non-Arthropod sequences retained for further exploration. These files are not filtered for number of reads nor contain quality categories. These should be processed further if required.
+- <i>unique_secondary_sequences.csv</i><br>Table of secondary sequences not found elsewhere on the partner or UMI plate [50 or more reads], retained for further secondary sequence analysis [parasites/symbionts].
+- <i>conflicts_family.csv and conflicts_order.csv</i><br>Tables of secondary sequences with good read support (> 100 reads or 50% or more of the primary sequence read) that were assigned to a different taxon than the primary sequence [family or order level], for further secondary sequence analysis [parasites/symbionts].
+- <i>tardigrada_nematoda_rotifera_annelida.csv and wolbachia.csv</i><br>Non-Arthropod sequences retained for further exploration. These files are not filtered for number of reads nor contain quality categories. These should be processed further if required. Vertebrates are not included in these tables. 
 
 ## Documentation
 The QC process is divided into parts:<br>
 1. <i>Assessment of the sequencing run</i><br>
-The script evaluates the quality of the sequencing run by providing statistics for both control and sample data and quality assessments of the plates.<br>
+The script evaluates the quality of the sequencing run by providing statistics for both control and sample data and quality assessments of the partner and UMI plates.<br>
 Plates are flagged for further evaluation if their read counts are insufficient compared to positive controls. The 5% of positive and negative controls with the lowest performance are also identified. <br>
-The QC report provides an overview of sequencing performance and highlights plates of lower than expected quality. However, plates are not automatically eliminated. Highlighted plates should be examined and re-sequences if required.<br>
+The QC report provides an overview of sequencing performance and highlights partner and UMI plates of lower than expected quality. However, plates are not automatically eliminated. Highlighted plates should be examined and re-sequences if required.<br>
 There’s also a table of failed negative controls that can potentially contain insect samples (partner’s error) and may need to be examined. <br><br>
 3. <i>Assessment of sequence conflicts and contaminants</i><br>
 The script identifies and assesses potential sequence conflicts and contaminants:<br><br>
