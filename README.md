@@ -81,7 +81,7 @@ Quality Scores: Categorises all the retained samples into categories depending o
 | <b>5</b>     | <i>Ok</i>             | 100-200              | At least one secondary sequence with 10 or more reads |MAYBE |
 | <b>6</b>     | <i>Almost ok</i>      | < 100                | At least one secondary sequence with 10 or more reads |MAYBE |
 | <b>7</b>     | <i>Need attention</i> | NA                | Conflicts detected in previous steps                     |MAYBE |
-| <b>8</b>     | <i>Exclude</i>        | < 5                  | At least one secondary sequence with 3 or reads       |NO |
+| <b>8</b>     | <i>Exclude</i>        | < 10                  | At least one secondary sequence with 3 or reads       |NO |
 | <b>9</b>     | <i>Replaced</i>       | NA                   | NA                                                    |YES |
 
 3. <i>Final assessments and plots </i><br>
