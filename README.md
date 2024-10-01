@@ -1,13 +1,9 @@
 # BIOSCAN QC
 This script generates a BIOSCAN QC report and filters one consensus sequence per sample using output files from mBRAVE. It is designed specifically for processing the Wellcome Sanger Institute BIOSCAN data. <br> <br> 
-<p align="center">
-  <img src="./2024Sep_QC2.png" alt="QC Repor"/>
-</p>
-
 ## Installation
 No installation is required when running this script on Farm.
 ## Usage
-To use the script, follow these steps:<br>Submit an interactive job request:<br>
+Submit an interactive job request:<br>
 ```bash
 bsub -Is -n 4 -R "select[mem>2000] rusage[mem=2000] span[hosts=1]" -M 2000 -G team222 bash
 ```
@@ -52,12 +48,12 @@ The script generates the following output files:
 - <i>filtered_metadata.csv</i><br>Metadata for samples that passed the QC. This file also contains the quality scores that each sample gets assigned [see below].
 - <i>filtered_sequences.fasta</i><br>Consensus sequences for samples that passed the QC. All samples from the metadata are here, despite the quality scores. 
 - <i>read_summary_metadata.csv</i><br>Summary statistics for the sequencing run. Further the tables can be combined across the batches to calculate sequencing statistics. 
-- <i>unique_secondary_sequences.csv</i><br>Table of secondary sequences not found elsewhere on the plate, retained for further secondary sequence searches.
-- <i>conflicts_family.csv and conflicts_order.csv</i><br>Tables of secondary sequences with good read support (> 100 reads or 50% or more of the primary sequence read), for further secondary sequence analysis.
+- <i>unique_secondary_sequences.csv</i><br>Table of secondary sequences not found elsewhere on the plate, retained for further secondary sequence analysis [parasites/symbionts].
+- <i>conflicts_family.csv and conflicts_order.csv</i><br>Tables of secondary sequences with good read support (> 100 reads or 50% or more of the primary sequence read), for further secondary sequence analysis [parasites/symbionts].
 - <i>tardigrada_nematoda_rotifera.csv and wolbachia.csv</i><br>Non-Arthropod sequences retained for further exploration. These files are not filtered for number of reads nor contain quality categories. These should be processed further if required.
 
 ## Documentation
-The QC process is divided into parts:<br><br>
+The QC process is divided into parts:<br>
 1. <i>Assessment of the sequencing run</i><br>
 The script evaluates the quality of the sequencing run by providing statistics for both control and sample data and quality assessments of the plates.<br>
 Plates are flagged for further evaluation if their read counts are insufficient compared to positive controls. The 5% of positive and negative controls with the lowest performance are also identified. <br>
@@ -81,7 +77,7 @@ Quality Scores: Categorises all the retained samples into categories depending o
 | <b>5</b>     | <i>Ok</i>             | 100-200              | At least one secondary sequence with 10 or more reads |MAYBE |
 | <b>6</b>     | <i>Almost ok</i>      | < 100                | At least one secondary sequence with 10 or more reads |MAYBE |
 | <b>7</b>     | <i>Need attention</i> | NA                | Conflicts detected in previous steps                     |MAYBE |
-| <b>8</b>     | <i>Exclude</i>        | < 10                  | At least one secondary sequence with 3 or reads       |NO |
+| <b>8</b>     | <i>Exclude</i>        | < 15                  | At least one secondary sequence with 3 or reads       |NO |
 | <b>9</b>     | <i>Replaced</i>       | NA                   | NA                                                    |YES |
 
 3. <i>Final assessments and plots </i><br>
