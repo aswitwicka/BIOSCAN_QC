@@ -49,7 +49,7 @@ The script generates the following output files:
 - <i>filtered_sequences.fasta</i><br>Consensus sequences for samples that passed the QC. All samples from the metadata are here, despite the quality scores. 
 - <i>read_summary_metadata.csv</i><br>Summary statistics for the sequencing run. Further the tables can be combined across the batches to calculate sequencing statistics. 
 - <i>unique_secondary_sequences.csv</i><br>Table of secondary sequences not found elsewhere on the partner or UMI plate [50 or more reads], retained for further secondary sequence analysis [parasites/symbionts].
-- <i>conflicts_family.csv and conflicts_order.csv</i><br>Tables of secondary sequences with good read support (> 100 reads or 50% or more of the primary sequence read) that were assigned to a different taxon than the primary sequence [family or order level], for further secondary sequence analysis [parasites/symbionts].
+- <i>conflicts_family.csv and conflicts_order.csv</i><br>Tables of secondary sequences with good read support (> 50 reads or 50% or more of the primary sequence read) that were assigned to a different taxon than the primary sequence [family or order level], for further secondary sequence analysis [parasites/symbionts].
 - <i>tardigrada_nematoda_rotifera_annelida.csv and wolbachia.csv</i><br>Non-Arthropod sequences retained for further exploration. These files are not filtered for number of reads nor contain quality categories. These should be processed further if required. Vertebrates are not included in these tables. 
 
 ## Documentation
