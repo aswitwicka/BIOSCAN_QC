@@ -68,7 +68,7 @@ Shorter Sequences: Identifies sequences shorter than expected within those witho
 Non-Arthropod Sequences: Replaces all primary non-Arthropod sequences with the Arthropod sequence with the highest read count. Wolbachia, Tardigrades, Rotifers, and Nematodes are retained in the output for further investigation. <br><br>
 Quality Scores: Categorises all the retained samples into categories depending on read count and the level of secondary sequence contamination <ins><b>from the same family or order</b></ins>. <br>The main QC report also contains a table showing how many samples were clasified into which category. This information is also save in read_summary_metadata.csv file.
 
-| Score | Category       | No. reads in primary | Secondary sequence assessment                                | Decision                                |
+| Score | Category       | No. reads in primary | Secondary sequence assessment [the same family or order]                                | Decision                                |
 |-------|----------------|----------------------|--------------------------------------------------------------|-----------------------------------------|
 | <b>1</b>     | <i>Perfect</i>        | > 200                | No secondary sequence with 10 or more reads           |YES |
 | <b>2</b>     | <i>Almost perfect</i> | 100-200              | No secondary sequence with 10 or more reads           |YES |
