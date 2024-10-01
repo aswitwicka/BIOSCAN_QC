@@ -70,13 +70,13 @@ Quality Scores: Categorises all the retained samples into categories depending o
 
 | Score | Category       | No. reads in primary | Secondary sequence assessment [the same family or order]                                | Decision                                |
 |-------|----------------|----------------------|--------------------------------------------------------------|-----------------------------------------|
-| <b>1</b>     | <i>Perfect</i>        | > 200                | No secondary sequence with 10 or more reads           |YES |
-| <b>2</b>     | <i>Almost perfect</i> | 100-200              | No secondary sequence with 10 or more reads           |YES |
-| <b>3</b>     | <i>Very good</i>      | < 100                | No secondary sequence with 10 or more reads           |YES |
-| <b>4</b>     | <i>Good</i>           | > 200                | At least one secondary sequence with 10 or more reads |NO [MAYBE] |
-| <b>5</b>     | <i>Ok</i>             | 100-200              | At least one secondary sequence with 10 or more reads |NO [MAYBE] |
-| <b>6</b>     | <i>Almost ok</i>      | < 100                | At least one secondary sequence with 10 or more reads |NO [MAYBE] |
-| <b>7</b>     | <i>Need attention</i> | NA                | Conflicts detected in previous steps                     |NO [MAYBE] |
+| <b>1</b>     | <i>Perfect</i>        | > 200                | No secondary sequence with 5 or more reads           |YES |
+| <b>2</b>     | <i>Almost perfect</i> | 100-200              | No secondary sequence with 5 or more reads           |YES |
+| <b>3</b>     | <i>Very good</i>      | < 100                | No secondary sequence with 5 or more reads           |YES |
+| <b>4</b>     | <i>Good</i>           | > 200                | At least one secondary sequence with 5 or more reads |NO |
+| <b>5</b>     | <i>Ok</i>             | 100-200              | At least one secondary sequence with 5 or more reads |NO |
+| <b>6</b>     | <i>Almost ok</i>      | < 100                | At least one secondary sequence with 5 or more reads |NO |
+| <b>7</b>     | <i>Need attention</i> | NA                | Conflicts detected in previous steps                     |NO |
 | <b>8</b>     | <i>Exclude</i>        | < 15                  | At least one secondary sequence with 3 or reads       |NO |
 
 3. <i>Final assessments and plots </i><br>
