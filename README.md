@@ -125,36 +125,50 @@ Negative control contamination<br>
 Assessment of primary and secondary sequences<br>
 - Number of samples with a primary sequence only.
 - Number of samples with primary and secondary sequences.
-- 
+- Number and percentage of chimeric primary sequences.
+- Number and percentage of chimeric secondary sequences.
+- Number and percentage of EXCLUDED primary sequences.
+- Number and percentage of primary sequences with no taxonomy assigned.
 
+The next step is evaluation of samples with no taxonomy assigned. The first plot shows three histograms of sequence length distribution: I. All sequences; II. A random sexuence subset; III. All samples with no taxonomy assigned. These plots were used to evaluate whether shorter sequences systematically do not get mBRAVE taxonomy assigned to them. The script identifies sequences shorter than expected within those without assigned taxonomy and replaces them with the closest matching longer sequence within the well [on average 100 bp longer; Levenshtein distance < 150].
 
+The next step is evaluation of samples where the primary sequence is not an arthropod. Visual examination of over 50 photos revealed that when the reads come promarly from Bovidae, Nematoda, Annelida, Wolbachia, Rotifera, Tardigrada or human, the best [highest read count and similarity score] secondary sequence comes from the arthropod plated in the well, unless any other errors, including sequencing, occur. Therefore, the primary non-arthropod sequences get removed and replaced by the best secondary sequence. The report displays number of primary non-arthopod sequences in a batch seperated by phylum. Samples where exclusively non-arthropod sequences were detected get removed at this step. At this point Nematoda, Tardigrada, Rotifera, Annelida, and Wolbachia sequences and sample information gets saved to seperate output files. 
 
+The next step is detection of Anopheles mosquitoes [BOLD:AAA3436] that BIOSCAN uses as internal controls. These are going to be detected and evaluated only if campus samples are present in the batch. Samples with primary Anopheles sequence with > 250 reads get counted and removed. Samples where Anopheles sequences are secondary get evaluated and all detected Anopheles sequences are removed from further steps. 
 
+The next step is evaluation of secondary arthropod sequences in the remaining samples. The report displays how many samples have no conflicts at all, meaning that in a given well only one sequence is present. THIS NEEDS TO BE SAVED FOR THE FIRST CATEGORY! 
 
+Next, all sesuences [primary and secondary] get removed if they have 5 or less reads. The number of excluded and retained samples is displayed in a table. Only 5 reads cannot confidently support the sample. This cut-off was established based on the manual examination of 25 photos per read count per sample. Photos were divided into two categories: correct family-level taxonomy and incorrect family-level taxonomy: BOXPLOT_PLACEHOLDER; As well as on the average number of reads in negative controls from 10 sequencing batches [N samples] indicationg that anything lower than 5 reads may be a cross-contamination from neighbouring samples. 
 
+A similar evaluation happens again - the report displays how many samples have no conflicts at all after the read-count-based filtering. The report alsp presents a histogram displaying the read support for all remaining secondary sequences, along with an average read count for remaining secondary sequences. THIS NEEDS TO BE SAVED FOR THE SECOND CATEGORY! 
 
+Further, the script identifies secondary sequences that are not found elsewhere on the same partner or UMI plate where the sample was processed. These sequences, along with the corresponding sample information, are then saved to a separate file for further evaluation. Simirarly, information about secondary sequences that are in conflict with the primary sequence gets saved to a seperate file. Conflicts are understood as a different family or order classification of two sequences within a sample. In the previous version only conflicting sequences with read support of more than 50% of the primary sequence read count were retained. Currently, all conflicts are saved for further evaluation and the samples with more than 50 read count support or more than 50% of read count compared to cresponding primary sequence get flagged within these files. 
 
+In the next step, all secondary sequences are removed, leaving only the primary arthropod sequences. The report then displays the number and percentage of retained samples. 
 
-
-The script identifies and assesses potential sequence conflicts and contaminants:<br><br>
-Cross-Contamination: Maps the distribution of positive control reads across plates and identifies potential cross-contamination sources in the negative controls. This step shows how far on a plate the potential contamination could spread. <br><br>
-Conflicting Sequences: Identifies conflicts within a sample where secondary sequences have > 100 reads or 50% or more of the primary sequence read and returns tables listing conflicts at the family and order levels. These tables can be used to recognise samples that may have two large insects plated together (partner’s error) and true symbiont/parasite interactions.
-Unique Secondary Sequences: Searches for secondary sequences with more than 50 reads that are not found elsewhere on the plate, indicating a potential true signal. These tables can be used to recognise samples that may have two large insects plated together (partner’s error) and true symbiont/parasite interactions.
-Shorter Sequences: Identifies sequences shorter than expected within those without assigned taxonomy and replaces them with the closest matching longer sequence within the sample (on average 100 bp longer; Levenshtein distance < 150). <br><br>
-Non-Arthropod Sequences: Replaces all primary non-Arthropod sequences with the Arthropod sequence with the highest read count. Wolbachia, Tardigrades, Rotifers, and Nematodes are retained in the output for further investigation. <br><br>
-Quality Scores: Categorises all the retained samples into categories depending on read count and the level of secondary sequence contamination <ins><b>from the same family or order</b></ins>. <br>The main QC report also contains a table showing how many samples were clasified into which category. This information is also save in read_summary_metadata.csv file.
+Further, all retained samples get assigned a quality score: 
 
 | Score | Category       | No. reads in primary | Secondary sequence assessment [the same family or order]                                | Decision                                |
 |-------|----------------|----------------------|--------------------------------------------------------------|-----------------------------------------|
-| <b>1</b>     | <i>Perfect</i>        | > 200                | No secondary sequence with 5 or more reads           |YES |
-| <b>2</b>     | <i>Almost perfect</i> | 100-200              | No secondary sequence with 5 or more reads           |YES |
-| <b>3</b>     | <i>Very good</i>      | < 100                | No secondary sequence with 5 or more reads           |YES |
-| <b>4</b>     | <i>Good</i>           | > 200                | At least one secondary sequence with 5 or more reads |NO |
-| <b>5</b>     | <i>Ok</i>             | 100-200              | At least one secondary sequence with 5 or more reads |NO |
-| <b>6</b>     | <i>Almost ok</i>      | < 100                | At least one secondary sequence with 5 or more reads |NO |
-| <b>7</b>     | <i>Need attention</i> | NA                | Conflicts detected in previous steps                     |NO |
-| <b>8</b>     | <i>Exclude</i>        | < 15                  | At least one secondary sequence with 3 or reads       |NO |
+| <b>1</b> | <i>Gold</i>                  | > 200   | No secondary sequence detected                                                                      |YES |
+| <b>2</b> | <i>Silver</i>                | 50 - 200| No secondary sequence detected                                                                      |YES |
+| <b>3</b> | <i>Brown</i>                 | 6 - 49  | No secondary sequence detected                                                                      |YES |
+| <b>4</b> | <i>Great</i>                 | > 200   | No secondary sequence with 5 or more reads                                                          |YES |
+| <b>5</b> | <i>Very good</i>             | 50 - 200| No secondary sequence with 5 or more reads                                                          |YES |
+| <b>6</b> | <i>Good</i>                  | > 200   | No conflicting secondary sequence with 5 or more reads<br>[other secondary sequences may be present]|YES |
+| <b>7</b> | <i>Ok</i>                    | 50 - 200| No conflicting secondary sequence with 5 or more reads<br>[other secondary sequences may be present]|YES |
+| <b>8</b> | <i>Need attention</i>        | > 200   | Conflicting secondary sequence with 5 or more reads                                                 |NO  |
+| <b>9</b> | <i>Even more attention</i>   | 50 - 200| Conflicting secondary sequence with 5 or more reads                                                 |NO  |
+| <b>10</b>| <i>Attention! Attention!</i> | 6 - 49  | No secondary sequence with 5 or more reads                                                          |NO  |
+| <b>11</b>| <i>Low read support</i>      | 6 - 49  | Any secondary sequence with 5 or more reads<br>[conflicting or not]                                 |NO  | WHY ? ? 
 
-<br><i>Final assessments and plots </i><br><br>
-This part contains tables with percentages of retained samples per partner, partner plate, and UMI plate. <br>
-Further, all partner plates and UMI plates are displayed as heatmaps.
+EXPLANATION FOR THE 50 READ CUT-OFF
+
+The report displays the above table with the number of samples assigned to each category. The categories are also included in the final sample metadata. The Decision table indicates whether the samples assigned these categories are going to be included in the BOLD upload. 
+<br><br><br>
+<i>Final assessments and plots </i><br><br>
+This part contains:
+- Big heatmap showing the number or reads supporting the consensus sequence selected for each retained sample.
+- Histogram showing the sequence length distribution across the retained samples. 
+- Tables with percentages of retained samples per partner, partner plate, and UMI plate. 
+- All partner plates and UMI plates displayed as heatmaps.
