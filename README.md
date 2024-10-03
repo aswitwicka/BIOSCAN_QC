@@ -148,19 +148,19 @@ In the next step, all secondary sequences are removed, leaving only the primary 
 
 Further, all retained samples get assigned a quality score: 
 
-| Score | Category       | No. reads in primary | Secondary sequence assessment [the same family or order]                                | Decision                                |
-|-------|----------------|----------------------|--------------------------------------------------------------|-----------------------------------------|
-| <b>1</b> | <i>Gold</i>                  | > 200   | No secondary sequence detected                                                                      |YES |
-| <b>2</b> | <i>Silver</i>                | 50 - 200| No secondary sequence detected                                                                      |YES |
-| <b>3</b> | <i>Brown</i>                 | 6 - 49  | No secondary sequence detected                                                                      |YES |
-| <b>4</b> | <i>Great</i>                 | > 200   | No secondary sequence with 5 or more reads                                                          |YES |
-| <b>5</b> | <i>Very good</i>             | 50 - 200| No secondary sequence with 5 or more reads                                                          |YES |
-| <b>6</b> | <i>Good</i>                  | > 200   | No conflicting secondary sequence with 5 or more reads<br>[other secondary sequences may be present]|YES |
-| <b>7</b> | <i>Ok</i>                    | 50 - 200| No conflicting secondary sequence with 5 or more reads<br>[other secondary sequences may be present]|YES |
-| <b>8</b> | <i>Need attention</i>        | > 200   | Conflicting secondary sequence with 5 or more reads                                                 |NO  |
-| <b>9</b> | <i>Even more attention</i>   | 50 - 200| Conflicting secondary sequence with 5 or more reads                                                 |NO  |
-| <b>10</b>| <i>Attention! Attention!</i> | 6 - 49  | No secondary sequence with 5 or more reads                                                          |NO  |
-| <b>11</b>| <i>Low read support</i>      | 6 - 49  | Any secondary sequence with 5 or more reads<br>[conflicting or not]                                 |NO  | WHY ? ? 
+| Score | No. reads in primary | Secondary sequence assessment [the same family or order]                                | Decision                                |
+|-------|----------------------|--------------------------------------------------------------|-----------------------------------------|
+| <b>1</b> | > 200   | No secondary sequence detected                                                                      |YES |
+| <b>2</b> | 50 - 200| No secondary sequence detected                                                                      |YES |
+| <b>3</b> | 6 - 49  | No secondary sequence detected                                                                      |YES |
+| <b>4</b> | > 200   | No secondary sequence with 5 or more reads                                                          |YES |
+| <b>5</b> | 50 - 200| No secondary sequence with 5 or more reads                                                          |YES |
+| <b>6</b> | > 200   | No conflicting secondary sequence with 5 or more reads<br>[other secondary sequences may be present]|YES |
+| <b>7</b> | 50 - 200| No conflicting secondary sequence with 5 or more reads<br>[other secondary sequences may be present]|YES |
+| <b>8</b> | > 200   | Conflicting secondary sequence with 5 or more reads                                                 |NO  |
+| <b>9</b> | 50 - 200| Conflicting secondary sequence with 5 or more reads                                                 |NO  |
+| <b>10</b>| 6 - 49  | No secondary sequence with 5 or more reads                                                          |NO  |
+| <b>11</b>| 6 - 49  | Any secondary sequence with 5 or more reads<br>[conflicting or not]                                 |NO  | WHY ? ? 
 
 EXPLANATION FOR THE 50 READ CUT-OFF
 
