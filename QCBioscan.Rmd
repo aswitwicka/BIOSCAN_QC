@@ -45,9 +45,9 @@ output_path <- env_list$output_path
 batch_no <- env_list$batch_no
 
 # For manual processing:
-# batch_no <- "batch18"
-# batch_path <- ("/lustre/scratch126/tol/teams/lawniczak/users/aw43/2024_07_bioscan_qc/input/mbrave_batch_data/batch18/")
-# output_path <- ("/lustre/scratch126/tol/teams/lawniczak/users/aw43/2024_07_bioscan_qc/output/qc_reports/batch18/")
+# batch_no <- "batch19"
+# batch_path <- ("/lustre/scratch126/tol/teams/lawniczak/users/aw43/2024_07_bioscan_qc/input/mbrave_batch_data/batch19/")
+# output_path <- ("/lustre/scratch126/tol/teams/lawniczak/users/aw43/2024_07_bioscan_qc/output/qc_reports/batch19/")
 ```
 ### Input directories and files
 <b>All input files are obtained from mBRAVE and deposited in one input directory:</b> <br>
@@ -810,7 +810,6 @@ if (length(p_cont_contamination_primary) > 0) {
 } else {
   cat("There are no samples that contain positive control reads as the primary hit")
 }
-
 # Secondary non-arthropod removed 
 p_cont_contamination_exclude1 <- p_cont_contamination_primary_df %>% filter(rep_count_primary == 1) %>% pull(pid)
 p_cont_contamination_exclude2 <- qc_AM %>% filter(pid %in% p_cont_contamination_primary_df$pid) %>% filter(assignment == "secondary" & p_primary == "Arthropoda") %>% pull(pid)
@@ -834,7 +833,6 @@ Distribution of reads in negative controls
 ```{r negative_control_contamination_histogram, fig.align='center', fig.width=3.7, fig.height=2}
 qc_AM$Sample.Plate.ID <- paste(qc_AM$partner_plate, qc_AM$plate_number, sep = "_")
 n_cont_samples_qc_AM <- qc_AM %>% filter(pid %in% n_cont_stats$Label) 
-
 # Calculate the maximum y value for both primary and secondary data
 combined_data <- n_cont_samples_qc_AM %>% filter(assignment %in% c("primary", "secondary"))
 basic_plot <- combined_data %>%
@@ -1075,50 +1073,6 @@ knitr::kable(chimera_primary_retained,
 chimera_primary_remove <- chimera_primary %>% filter(pid %in% only_primary_chimera$pid) %>% filter(!(pid %in% chimera_primary_retained$pid)) %>% pull(pid)
 qc_tsv_no_cont <- qc_tsv_no_cont %>% filter(!(pid %in% chimera_primary_remove))
 ```
-```{r chimeric_contig_assessment}
-# # Get other samples that have chimeric reads but have secondary contig
-# qc_tsv_no_cont$Contig_ID <- as.numeric(qc_tsv_no_cont$Contig_ID)
-# primary_chimera_and_sec <- qc_tsv_no_cont %>% filter(!(pid %in% only_primary_chimera)) %>% filter(str_detect(otu_primary, "chimera")) %>% pull(pid)
-# primary_chimera_and_sec <- qc_tsv_no_cont %>% filter(pid %in% primary_chimera_and_sec) %>% group_by(pid) %>% arrange(pid, Contig_ID)
-# # Get the sequences
-# sequences_df_chimeras <- qc_tsv_no_cont %>% filter(pid %in% primary_chimera_and_sec$pid)
-# # Primary chimeric contigs 
-# contig1_sequences <- primary_chimera_and_sec %>%
-#   filter(Contig_ID == 1) %>%
-#   mutate(contig1_sequence = sequence) %>%
-#   dplyr::select(pid, contig1_sequence, otu_primary)
-# colnames(contig1_sequences) <- c("pid", "contig1_sequence", "otu_primary_org")
-# # Calculate Levenshtein distance and find the most similar secondary sequence 
-# most_similar_sequences <- sequences_df_chimeras %>%
-#   inner_join(contig1_sequences, by = "pid") %>%  
-#   filter(Contig_ID != 1) %>%  
-#   filter(!(str_detect(otu_primary, "chimera"))) %>%
-#   rowwise() %>%  
-#   mutate(distance = stringdist::stringdist(sequence, contig1_sequence, method = "lv")) %>%
-#   group_by(pid) %>%  
-#   slice_min(distance) %>%  
-#   ungroup() %>% 
-#   filter(distance <= 50) %>% # Cut-off many need changing - evaluate
-#   dplyr::select(-contig1_sequence, -otu_primary_org) %>% 
-#   group_by(pid) %>% 
-#   arrange(-id_similarity_primary, -rep_count_primary) %>% slice_head(n = 1)
-# # Replace
-# qc_tsv_no_cont <- qc_tsv_no_cont %>% filter(!(pid %in% most_similar_sequences$pid))
-# qc_tsv_no_cont <- rbind(qc_tsv_no_cont, (most_similar_sequences %>% dplyr::select(-distance)))
-# # Output
-# cat(paste("Number of samples with primary chimeric contigs and other secondary contigs:", length(unique(primary_chimera_and_sec$pid)), 
-#           "\nThese samples will be replaced by the secondary contig if \n", 
-#           "there is a secondary contig similar in terms of sequence\n", 
-#           "[Levenshtein distance < 50]", 
-#           "\nNOTE: Other samples will be excluded!",
-#           "\n\nNumber of retained samples:", length(unique(most_similar_sequences$pid))))
-# 
-# # knitr::kable(most_similar_sequences %>% dplyr::select(pid, Contig_ID, rep_count_primary, id_similarity_primary, 
-# #                                                c_primary, o_primary, f_primary, g_primary, s_primary, otu_primary, distance) %>% 
-# #                arrange(Contig_ID) %>% arrange(pid), 
-# #              col.names = c("Sample", "Contig", "Read count", "Sequence similarity", "Class", "Order", "Family", "Genus", "Species", "OTU", "Levenshtein distance"), format = "html") %>%
-# #   kableExtra::kable_styling(full_width = FALSE, position = "center")
-```
 ```{r further_data_examination}
 # Make sure that everything that's already excluded is not here: 
 cat(paste("Number of EXCLUDED primary contigs:", qc_tsv_no_cont %>% 
@@ -1299,8 +1253,8 @@ cat(paste("Number of African Anopheline samples:", length(anopheles_pids),
           "\nNOTE: All primary mosquito samples removed!"))
 ```
 ```{r conflicting_arthropod_contig_assessment,fig.align='center', fig.width=2.5, fig.height=2}
-# Exclude everything that is 5 reads or more 
-qc_tsv_arthropod_primary <- qc_tsv_arthropod_primary %>% filter(rep_count_primary > 5)
+# Exclude everything that is less than 5 reads
+qc_tsv_arthropod_primary <- qc_tsv_arthropod_primary %>% filter(rep_count_primary >= 5)
 
 pid_counts <- qc_tsv_arthropod_primary %>%
   group_by(pid) %>%
@@ -1331,7 +1285,6 @@ ggplot(aes(x = rep_count_primary)) +
     axis.text = element_text(size = 6)
   )
 qc_tsv_arthropod_primary <- merge(qc_tsv_arthropod_primary, pid_counts, by = "pid")
-
 # Now I have information on how many sequences are in one samples in total. 
 # How many reads of the second most supported sequence 
 qc_tsv_arthropod_sec_read <- qc_tsv_arthropod_primary %>% group_by(pid) %>% 
@@ -1353,13 +1306,13 @@ qc_tsv_arthropod_primary <- qc_tsv_arthropod_primary %>%
 qc_tsv_arthropod_primary <- qc_tsv_arthropod_primary %>%
   group_by(pid) %>%
   mutate(
-    # Step 3: Find conflicting secondary rows (those with a different f_primary)
+    # Find conflicting secondary rows (those with a different f_primary)
     conflicting_secondary = if_else(
       assignment == "secondary" & f_primary != primary_f_value & f_primary != "None", 
       TRUE, 
       FALSE
     ),
-    # Step 4: Find the maximum rep_count_primary from the conflicting secondary rows
+    # Find the maximum rep_count_primary from the conflicting secondary rows
     max_rep_count_conflict = if_else(
       # Check if there are any conflicting secondary rows
       any(conflicting_secondary), 
@@ -1368,7 +1321,7 @@ qc_tsv_arthropod_primary <- qc_tsv_arthropod_primary %>%
       # If there are no conflicting secondary rows, return 0
       0
     ),
-    # Step 5: Assign this max_rep_count_conflict to all rows of the pid group
+    # Assign this max_rep_count_conflict to all rows of the pid group
     family_conflict_read_count = if_else(
       assignment == "primary" & f_primary == "None", 
       0, 
@@ -1387,13 +1340,13 @@ qc_tsv_arthropod_primary <- qc_tsv_arthropod_primary %>%
 qc_tsv_arthropod_primary <- qc_tsv_arthropod_primary %>%
   group_by(pid) %>%
   mutate(
-    # Step 3: Find conflicting secondary rows (those with a different o_primary)
+    # Find conflicting secondary rows (those with a different o_primary)
     conflicting_secondary = if_else(
       assignment == "secondary" & o_primary != primary_o_value & o_primary != "None", 
       TRUE, 
       FALSE
     ),
-    # Step 4: Find the maximum rep_count_primary from the conflicting secondary rows
+    # Find the maximum rep_count_primary from the conflicting secondary rows
     max_rep_count_conflict = if_else(
       # Check if there are any conflicting secondary rows
       any(conflicting_secondary), 
@@ -1402,7 +1355,7 @@ qc_tsv_arthropod_primary <- qc_tsv_arthropod_primary %>%
       # If there are no conflicting secondary rows, return 0
       0
     ),
-    # Step 5: Assign this max_rep_count_conflict to all rows of the pid group
+    # Assign this max_rep_count_conflict to all rows of the pid group
     order_conflict_read_count = if_else(
       assignment == "primary" & o_primary == "None", 
       0, 
@@ -1437,9 +1390,9 @@ arthropods_to_examine <- arthropods_to_examine %>% filter(!(pid %in% consistent_
 arthropods_to_examine <- arthropods_to_examine %>%
   filter(otu_primary != "EXCLUDED")
 # Add umi plate info 
-umi_info <- sample_stats %>% dplyr::select(Label, UMI.Plate.ID)
-colnames(umi_info) <- c("pid", "UMI.Plate.ID")
-arthropods_to_examine <- merge(arthropods_to_examine, umi_info, by = "pid")
+# umi_info <- sample_stats %>% dplyr::select(Label, UMI.Plate.ID)
+# colnames(umi_info) <- c("pid", "UMI.Plate.ID")
+# arthropods_to_examine <- merge(arthropods_to_examine, umi_info, by = "pid")
 # Split the data by partner plate
 split_df_list <- split(arthropods_to_examine, arthropods_to_examine$partner_plate)
 filter_otus <- function(df) {
@@ -1506,7 +1459,6 @@ conflicting_arthropods_tax <- conflicting_arthropods_tax %>%
   ungroup()
 conflicting_arthropods_tax <- conflicting_arthropods_tax %>% filter(!(pid %in% conflicting_arthropods$pid))
 conflicting_arthropods_tax$conflict_level <- "low"
-conflicting_arthropods <- conflicting_arthropods %>% dplyr::select(-UMI.Plate.ID)
 conflicting_arthropods_tax <- rbind(conflicting_arthropods_tax, conflicting_arthropods)
 
 cat(paste("Number of samples with only primary Arthropod contig:", length(unique_pids), "\n",
@@ -1526,15 +1478,12 @@ write.csv(otus_to_examine, file = csv_file_path, row.names = FALSE)
 ```{r remove_secondary_contigs}
 # Remove secondary contigs
 qc_tsv_arthropod_primary <- qc_tsv_arthropod_primary %>% filter(assignment == "primary") %>% group_by(pid) %>% arrange(-rep_count_primary) %>% slice_head(n = 1)
-
 non_arth_summary <- table(qc_tsv_arthropod_primary %>% filter(assignment == "primary") %>% pull(p_primary))
 knitr::kable(non_arth_summary, col.names = c("Primary hit", "Number"), format = "html") %>%
   kableExtra::kable_styling(full_width = FALSE, position = "center")
-
 # Remove chimeras with low read support CHANGE THIS!!!!!!
 # Get only 5 or check if it's been done 
-qc_tsv_arthropod_primary <- qc_tsv_arthropod_primary %>% filter((str_detect(otu_primary, "chimera") & rep_count_primary < 6))
-
+qc_tsv_arthropod_primary <- qc_tsv_arthropod_primary %>% filter(!(str_detect(otu_primary, "chimera") & rep_count_primary < 5))
 cat(paste("Number of retained samples:", length(unique(qc_tsv_arthropod_primary$pid)),
           "\nNumber of Arthropod samples assigned by mBRAVE [this inscludes samples with 5 or less reads that have now been excluded!]:",
           (qc_AM %>% filter(!(str_detect(pid, "CONTROL"))) %>% filter(assignment == "primary") %>%  filter(p_primary == "Arthropoda") %>% 
@@ -1550,47 +1499,41 @@ qc_tsv_arthropod_primary <- qc_tsv_arthropod_primary %>%
     rep_count_primary > 200 & no_conflicting_sequences == 1 ~ 1,
     rep_count_primary >= 50 & rep_count_primary <= 200 & no_conflicting_sequences == 1 ~ 2,
     rep_count_primary > 5 & rep_count_primary < 50 & no_conflicting_sequences == 1 ~ 3, # NO CONFLICTS AT ALL
-    rep_count_primary > 200 & tax_conflict_read_count < 5 ~ 6,
-    rep_count_primary >= 50 & rep_count_primary <= 200 & tax_conflict_read_count < 5 ~ 7, # NO MORE THAN 4 CONFLICTING SECONDARY READS OF A SINGLE SEQUENCE 
-    rep_count_primary > 200 & best_secondary_read_count < 5 ~ 4,
-    rep_count_primary >= 50 & rep_count_primary <= 200 & best_secondary_read_count < 5 ~ 5, # NO MORE THAN 4 NON-CONFLICTING SECONDARY READS OF A SEQUENCE 
+    rep_count_primary > 200 & no_conflicting_sequences > 1 & best_secondary_read_count <= 5 ~ 4,
+    rep_count_primary >= 50 & no_conflicting_sequences > 1 & rep_count_primary <= 200 & best_secondary_read_count <= 5 ~ 5, # NO MORE THAN 4 NON-CONFLICTING SECONDARY READS OF A SEQUENCE 
+    rep_count_primary > 200 & no_conflicting_sequences > 1 & tax_conflict_read_count <= 5 ~ 6,
+    rep_count_primary >= 50 & no_conflicting_sequences > 1 & rep_count_primary <= 200 & tax_conflict_read_count <= 5 ~ 7, # NO MORE THAN 4 CONFLICTING SECONDARY READS OF A SINGLE SEQUENCE
     rep_count_primary > 200 & best_secondary_read_count >= 5 ~ 8,
-    rep_count_primary >= 50 & rep_count_primary <= 200 & best_secondary_read_count >= 5 ~ 9,
-    rep_count_primary >= 5 & rep_count_primary <= 49 & tax_conflict_read_count < 5 ~ 10, # Low read count but no conflicting reads 
-    rep_count_primary >= 5 & rep_count_primary <= 49 & best_secondary_read_count > 1 ~ 11, # Any secondary reads in low read samples 
-    TRUE ~ "no_category"  # To check if anything goes wrong with filtering 
+    rep_count_primary >= 50 & rep_count_primary <= 200 & best_secondary_read_count > 5 ~ 9,
+    rep_count_primary >= 5 & rep_count_primary <= 49 & tax_conflict_read_count <= 5 ~ 10, # Low read count but no conflicting reads 
+    rep_count_primary >= 5 & rep_count_primary <= 49 & best_secondary_read_count > 1 ~ 11, # Any secondary reads in low read samples
+    rep_count_primary >= 5 & rep_count_primary <= 49 & tax_conflict_read_count > 1 ~ 11, # Any secondary reads in low read samples
+    TRUE ~ 12  # To check if anything goes wrong with filtering 
   )) %>%
   mutate(category_explanation = case_when(
     category == 1 ~ "Only one sequence with more than 200 reads",
     category == 2 ~ "Only one sequence with 50 to 200 reads",
     category == 3 ~ "Only one sequence with more than 5 but less than 50 reads",
-    category == 4 ~ "Dominant sequence with more than 200 reads, non-conflicting secondary sequences with less than 5 read support",
-    category == 5 ~ "Dominant sequence with 50 to 200 reads, non-conflicting secondary sequences with less than 5 read support",
-    category == 6 ~ "Dominant sequence with more than 200 reads, conflicting secondary sequences with less than 5 read support",
-    category == 7 ~ "Dominant sequence with 50 to 200 reads, conflicting secondary sequences with less than 5 read support",
-    category == 8 ~ "Dominant sequence with more than 200 reads, secondary sequences with 5 or more read support",
-    category == 9 ~ "Dominant sequence with 50 to 200 reads, secondary sequences with 5 or more read support",
-    category == 10 ~ "Dominant sequence with more than 5 but less than 50 reads, non-conflicting secondary sequences with less than 5 read support",
+    category == 4 ~ "Dominant sequence with more than 200 reads, non-conflicting secondary sequences with 5 or less read support",
+    category == 5 ~ "Dominant sequence with 50 to 200 reads, non-conflicting secondary sequences with 5 or less read support",
+    category == 6 ~ "Dominant sequence with more than 200 reads, conflicting secondary sequences with 5 or less read support",
+    category == 7 ~ "Dominant sequence with 50 to 200 reads, conflicting secondary sequences with 5 or less read support",
+    category == 8 ~ "Dominant sequence with more than 200 reads, secondary sequences with more than 5 read support",
+    category == 9 ~ "Dominant sequence with 50 to 200 reads, secondary sequences with more than 5 read supportt",
+    category == 10 ~ "Dominant sequence with more than 5 but less than 50 reads, non-conflicting secondary sequences with 5 or less read support",
     category == 11 ~ "Dominant sequence with more than 5 but less than 50 reads, any other secondary reads present",
-    TRUE ~ "no_category"  # To check if anything goes wrong with filtering 
+    category == 12 ~ "no_category"  # To check if anything goes wrong with filtering 
   )) %>%
   mutate(category_decision = case_when(
     category %in% c(1:7) ~ "YES",
     category %in% c(8:11) ~ "NO",
-    TRUE ~ "no_category"
+    category == 12 ~ "no_category"
   ))
 
 summary1 <- table(qc_tsv_arthropod_primary$category) %>% as.data.frame()
 summary2 <- table(qc_tsv_arthropod_primary$category_explanation) %>% as.data.frame()
 summary_merge <- merge(summary2,summary1, by = "Freq")
 colnames(summary_merge) <- c("Number of samples", "Description", "Category")
-summary_merge <- summary_merge %>% 
-  mutate(category_decision = case_when(
-    Category %in% c(1, 2, 3) ~ "YES",
-    Category %in% c(6, 7, 4, 5) ~ "NO",
-    Category == 8 ~ "NO",
-    TRUE ~ NA_character_  # Default case
-  ))
 knitr::kable(summary_merge %>% arrange(Category), format = "html") %>% 
   kableExtra::kable_styling(full_width = FALSE, position = "center")
 
@@ -1614,11 +1557,6 @@ write.csv(sample_metadata, file = csv_file_path, row.names = FALSE)
 
 <br>NOTE: The heatmaps below show only the retained samples. Controls, chimeric samples, non-Arthropod samples, and samples with no taxonomy assigned have been removed or replaced! 
 ```{r heatmap1, fig.align='center', fig.width=14, fig.height=14}
-
-sample_stats_filtered <- sample_stats %>% filter(Label %in% qc_tsv_arthropod_primary$pid) %>% dplyr::select(Label, Count)
-sample_stats_filtered$pid <- sample_stats_filtered$Label
-qc_tsv_merged_primary_only <- merge(qc_tsv_arthropod_primary, sample_stats_filtered, by = "pid")
-
 generalHeatmap <- function(variable, title){
   qc_tsv_merged_primary_only %>%  
     ggplot(aes(x = Forward.UMI.Label, y = Reverse.UMI.Label)) + 
@@ -1637,13 +1575,23 @@ generalHeatmap <- function(variable, title){
     facet_grid(partner_plate ~ ., scales = "free_y", space = "free", switch = "y",
                labeller = labeller(Group = function(x) paste0("Group: ", x)))
 }
+
+sample_stats_filtered <- sample_stats %>% filter(Label %in% (qc_tsv_arthropod_primary %>% pull(pid))) %>% dplyr::select(Label, Count)
+sample_stats_filtered$pid <- sample_stats_filtered$Label
+qc_tsv_merged_primary_only <- merge(qc_tsv_arthropod_primary, sample_stats_filtered, by = "pid")
 generalHeatmap("Count", "No. Reads")
 ```
 ```{r heatmap2, fig.align='center', fig.width=14, fig.height=14}
+sample_stats_filtered <- sample_stats %>% filter(Label %in% (qc_tsv_arthropod_primary %>% pull(pid))) %>% dplyr::select(Label, Count)
+sample_stats_filtered$pid <- sample_stats_filtered$Label
+qc_tsv_merged_primary_only <- merge(qc_tsv_arthropod_primary, sample_stats_filtered, by = "pid")
 generalHeatmap("rep_count_primary", "No, Primary Sequences")
 ```
 ```{r heatmap3, fig.align='center', fig.width=14, fig.height=14}
-generalHeatmap("id_similarity_primary", "Sequence Similarity")
+sample_stats_filtered <- sample_stats %>% filter(Label %in% (qc_tsv_arthropod_primary %>% filter(category_decision == "YES") %>% pull(pid))) %>% dplyr::select(Label, Count)
+sample_stats_filtered$pid <- sample_stats_filtered$Label
+qc_tsv_merged_primary_only <- merge(qc_tsv_arthropod_primary, sample_stats_filtered, by = "pid")
+generalHeatmap("rep_count_primary", "No, Primary Sequences")
 ```
 ```{r length_histogram, fig.align='center', fig.width=2.5, fig.height=2}
 # Prepare for saving
@@ -1747,30 +1695,24 @@ if (length(non_bos_contaminated_n_cont) > 0) {
 ```{r all_plate_heatmaps), fig.width=12, fig.height=2.3}
 unique_plates <- stats_table_comb %>% arrange(partner_plate) %>% pull(partner_plate) %>% unique()
 plot_list_counts <- list()
-
 heatmapPlate(unique_plates, stats_table_comb, plot_list_counts)
 ```
 ```{r all_plate_heatmaps2, fig.align='center', fig.width=6, fig.height=2.5}
 # Extract unique UMI plates
 unique_umi_plates <- stats_table_comb %>% arrange(UMI.Plate.ID) %>% pull(UMI.Plate.ID) %>% unique()
-
 # Get UMI plate positions 
 stats_table_comb <- merge(stats_table_comb, (umi_plates %>% dplyr::select(-Count, -UMI.Plate.ID)), by = c("Reverse.UMI.Label", "Forward.UMI.Label")) %>% mutate(
     umi_row = substr(Well.Coordinate, 1, 1),
     umi_column = substr(Well.Coordinate, 2, 3)
   )
-
 # Calculate global min and max for the color scale
 global_min_count <- min(stats_table_comb$Count, na.rm = TRUE)
 global_max_count <- max(stats_table_comb$Count, na.rm = TRUE)
-
 # Initialize an empty list to store the plots
 plot_list_countsUMI <- list()
-
 # Loop through each unique group to create and store the plots
 for (umi in unique_umi_plates) {
   umi_data <- stats_table_comb %>% filter(UMI.Plate.ID == umi)
-
   plot <- umi_data %>% ggplot(aes(x = factor(umi_column, levels = 1:24), y = factor(umi_row, levels = rev(LETTERS[1:16])), fill = Count)) +
     geom_tile(color = "white") +
     geom_tile(data = (umi_data %>% filter(sample_type != "sample")),
@@ -1793,7 +1735,6 @@ for (umi in unique_umi_plates) {
   # Store the plot in the list with the group name as the key
   plot_list_countsUMI[[umi]] <- plot
 }
-
 names(plot_list_countsUMI) <- unique_umi_plates
 for (plot in plot_list_countsUMI) {
   print(plot)
