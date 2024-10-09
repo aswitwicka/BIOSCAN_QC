@@ -89,11 +89,11 @@ Statistics for the samples <br>
 - Number of samples in the lower 10% and 5% quantiles and the names of associated partners.
 - Number of samples with 0 reads.
 
-Partner plate boxplot
+Partner plate boxplot <br>
 The plot shows the read count per sample for each partner plate [each box]. Box colours indicate partners. The grey horisontal line shows the median, while the brown horisontal like indicates the mean. Blue data points show empty negative controls. Navy data points show lysate negative controls. Green data points show positive controls. 
 Boxes that are grey inside show plates where the 75th percentile of the data is lower than expected mean read count. These plates and flagged as 'low-performance' need further attention. 
 
-UMI plate boxplot
+UMI plate boxplot <br> 
 The plot shows the read count per sample for each UMI plate [each box]. Data point colours indicate partners. The grey horisontal line shows the median, while the brown horisontal like indicates the mean. Blue data points show empty negative controls. Navy data points show lysate negative controls. Green data points show positive controls. Boxes that are grey inside show plates where the 75th percentile of the data is lower than expected mean read count.
 Purple data points transfer the information from the partner plate boxplot. Namely, all purple data points are samples from the 'low-performance' partner plates. The percentage of samples from the low-performance partner plates that are present in the low-performance UMI plates is displayed below the plot. Usually, the 'low-performance' of UMI plates is caused by accumulation of samples from 'low-performance' partner plates, therefore, it is a carry-on effect and not the failure of UMI plates.  
 
@@ -132,37 +132,33 @@ Assessment of primary and secondary sequences<br>
 
 The next step is evaluation of samples with no taxonomy assigned. The first plot shows three histograms of sequence length distribution: I. All sequences; II. A random sexuence subset; III. All samples with no taxonomy assigned. These plots were used to evaluate whether shorter sequences systematically do not get mBRAVE taxonomy assigned to them. The script identifies sequences shorter than expected within those without assigned taxonomy and replaces them with the closest matching longer sequence within the well [on average 100 bp longer; Levenshtein distance < 150].
 
-The next step is evaluation of samples where the primary sequence is not an arthropod. Visual examination of over 50 photos revealed that when the reads come promarly from Bovidae, Nematoda, Annelida, Wolbachia, Rotifera, Tardigrada or human, the best [highest read count and similarity score] secondary sequence comes from the arthropod plated in the well, unless any other errors, including sequencing, occur. Therefore, the primary non-arthropod sequences get removed and replaced by the best secondary sequence. The report displays number of primary non-arthopod sequences in a batch seperated by phylum. Samples where exclusively non-arthropod sequences were detected get removed at this step. At this point Nematoda, Tardigrada, Rotifera, Annelida, and Wolbachia sequences and sample information gets saved to seperate output files. 
+The next step is evaluation of samples where the primary sequence is not an arthropod. Visual examination of over 50 photos revealed that when the reads come primarly from Bovidae, Nematoda, Annelida, Wolbachia, Rotifera, Tardigrada or human, the best [highest read count and similarity score] secondary sequence comes from the arthropod plated in the well, unless any other errors, including sequencing, occur. Therefore, the primary non-arthropod sequences get removed and replaced by the best secondary sequence. The report displays number of primary non-arthopod sequences in a batch seperated by phylum. Samples where exclusively non-arthropod sequences were detected get removed at this step. At this point Nematoda, Tardigrada, Rotifera, Annelida, and Wolbachia sequences and sample information gets saved to seperate output files. 
 
-The next step is detection of Anopheles mosquitoes [BOLD:AAA3436] that BIOSCAN uses as internal controls. These are going to be detected and evaluated only if campus samples are present in the batch. Samples with primary Anopheles sequence with > 250 reads get counted and removed. Samples where Anopheles sequences are secondary get evaluated and all detected Anopheles sequences are removed from further steps. 
+The next step is detection of Anopheles mosquitoes [BOLD:AAA3436] that BIOSCAN uses as internal controls. These are going to be detected and evaluated only if campus samples are present in the batch. Samples with primary Anopheles sequence with 250 or more reads get counted and removed. Samples where Anopheles sequences are secondary are removed from further steps.
 
-The next step is evaluation of secondary arthropod sequences in the remaining samples. The report displays how many samples have no conflicts at all, meaning that in a given well only one sequence is present. THIS NEEDS TO BE SAVED FOR THE FIRST CATEGORY! 
+The next step is evaluation of secondary arthropod sequences in the remaining samples. The report displays how many samples have no conflicts at all, meaning that in a given well only one sequence is present. Next, all sesuences [primary and secondary] get removed if they have less than 5 reads. The number of excluded and retained samples is displayed in a table. Fewer than 5 reads cannot confidently support the sample. This cut-off was established based on the manual examination of 30 photos per read count per sample [see figure below]. Photos were divided into two categories: correct family-level taxonomy and incorrect family-level taxonomy. As well as on the average number of reads in negative controls from 10 sequencing batches [N samples] indicationg that anything lower than 5 reads may be a cross-contamination from neighbouring samples. 
 
-Next, all sesuences [primary and secondary] get removed if they have 5 or less reads. The number of excluded and retained samples is displayed in a table. Only 5 reads cannot confidently support the sample. This cut-off was established based on the manual examination of 25 photos per read count per sample. Photos were divided into two categories: correct family-level taxonomy and incorrect family-level taxonomy: BOXPLOT_PLACEHOLDER; As well as on the average number of reads in negative controls from 10 sequencing batches [N samples] indicationg that anything lower than 5 reads may be a cross-contamination from neighbouring samples. 
+FIGURE PLACEHOLDER - manual photo examination, negative control examination, anopheles read examination in secondary datas. 
 
-A similar evaluation happens again - the report displays how many samples have no conflicts at all after the read-count-based filtering. The report alsp presents a histogram displaying the read support for all remaining secondary sequences, along with an average read count for remaining secondary sequences. THIS NEEDS TO BE SAVED FOR THE SECOND CATEGORY! 
-
-Further, the script identifies secondary sequences that are not found elsewhere on the same partner or UMI plate where the sample was processed. These sequences, along with the corresponding sample information, are then saved to a separate file for further evaluation. Simirarly, information about secondary sequences that are in conflict with the primary sequence gets saved to a seperate file. Conflicts are understood as a different family or order classification of two sequences within a sample. In the previous version only conflicting sequences with read support of more than 50% of the primary sequence read count were retained. Currently, all conflicts are saved for further evaluation and the samples with more than 50 read count support or more than 50% of read count compared to cresponding primary sequence get flagged within these files. 
+Further, the script identifies secondary sequences that are not found elsewhere on the same partner or UMI plate where the sample was processed. These sequences, along with the corresponding sample information, are then saved to a separate file for further evaluation. Simirarly, information about secondary sequences that are in conflict with the primary sequence gets saved to a seperate file. Conflicts are understood as a different family or order classification of two sequences within a sample. In the previous version only conflicting sequences with read support of more 50 reads when the primary sequence is supported by 100 or more reads or more than 50% of the primary sequence read count were retained. Currently, all conflicts are saved for further evaluation and the samples that meet the mentioned read count criteria get flagged within the output file. 
 
 In the next step, all secondary sequences are removed, leaving only the primary arthropod sequences. The report then displays the number and percentage of retained samples. 
 
 Further, all retained samples get assigned a quality score: 
 
-| Score | No. reads in primary | Secondary sequence assessment [the same family or order]                                | Decision                                |
+| Score | No. reads in primary | Secondary sequence assessment [the same family or order]                                | Decision     |
 |-------|----------------------|--------------------------------------------------------------|-----------------------------------------|
-| <b>1</b> | > 200   | No secondary sequence detected                                                                      |YES |
-| <b>2</b> | 50 - 200| No secondary sequence detected                                                                      |YES |
-| <b>3</b> | 6 - 49  | No secondary sequence detected                                                                      |YES |
-| <b>4</b> | > 200   | No secondary sequence with 5 or more reads                                                          |YES |
-| <b>5</b> | 50 - 200| No secondary sequence with 5 or more reads                                                          |YES |
-| <b>6</b> | > 200   | No conflicting secondary sequence with 5 or more reads<br>[other secondary sequences may be present]|YES |
-| <b>7</b> | 50 - 200| No conflicting secondary sequence with 5 or more reads<br>[other secondary sequences may be present]|YES |
-| <b>8</b> | > 200   | Conflicting secondary sequence with 5 or more reads                                                 |NO  |
-| <b>9</b> | 50 - 200| Conflicting secondary sequence with 5 or more reads                                                 |NO  |
-| <b>10</b>| 6 - 49  | No secondary sequence with 5 or more reads                                                          |NO  |
-| <b>11</b>| 6 - 49  | Any secondary sequence with 5 or more reads<br>[conflicting or not]                                 |NO  | WHY ? ? 
-
-EXPLANATION FOR THE 50 READ CUT-OFF
+| <b>1</b> | > 200   | Only one sequence with more than 200 reads, no secondary sequence detected                             |YES |
+| <b>2</b> | 50 - 200| Only one sequence with 50 to 200 reads, no secondary sequence detected                                 |YES |
+| <b>3</b> | 5 - 49  | Only one sequence with 5 or more but less than 50 reads, no secondary sequence detected                |YES |
+| <b>4</b> | > 200   | Dominant sequence with more than 200 reads, non-conflicting secondary sequences with 5 or less reads   |YES |
+| <b>5</b> | 50 - 200| Dominant sequence with 50 to 200 reads, non-conflicting secondary sequences with 5 or less reads       |YES |
+| <b>6</b> | > 200   | Dominant sequence with more than 200 reads, conflicting secondary sequences with 5 or less reads       |YES |
+| <b>7</b> | 50 - 200| Dominant sequence with 50 to 200 reads, conflicting secondary sequences with 5 or less read            |YES |
+| <b>8</b> | > 200   | Dominant sequence with more than 200 reads, secondary sequences with more than 5 read support          |NO  |
+| <b>9</b> | 50 - 200| Dominant sequence with 50 to 200 reads, secondary sequences with more than 5 read support              |NO  |
+| <b>10</b>| 6 - 49  | Dominant sequence with 5 or more but less than 50 reads, non-conflicting secondary sequences with less than 5 reads |NO  |
+| <b>11</b>| 6 - 49  | Dominant sequence with more than 5 but less than 50 reads, any other secondary reads present<br>[conflicting or not]|NO  | 
 
 The report displays the above table with the number of samples assigned to each category. The categories are also included in the final sample metadata. The Decision table indicates whether the samples assigned these categories are going to be included in the BOLD upload. 
 <br><br><br>
