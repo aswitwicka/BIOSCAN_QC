@@ -49,31 +49,6 @@ batch_no <- env_list$batch_no
 # batch_path <- ("/lustre/scratch126/tol/teams/lawniczak/users/aw43/2024_07_bioscan_qc/input/mbrave_batch_data/batch19/")
 # output_path <- ("/lustre/scratch126/tol/teams/lawniczak/users/aw43/2024_07_bioscan_qc/output/qc_reports/batch19/")
 ```
-### Input directories and files
-<b>All input files are obtained from mBRAVE and deposited in one input directory:</b> <br>
-  1. Consensus network .tsv file [raw data, nothing filtered out] <br>
-  2. Sequence .fasta file [all sequences, not only the consensus sequence] <br>
-  3. Sample statistics .txt file [must contain <i>sample_stats.txt</i> in the file name] <br>
-  4. Negative control statistics .txt file [must contain <i>control_neg_stats.txt</i> in the file name] <br>
-  5. Positive control statistics .txt file [must contain <i>control_pos_stats.txt</i> in the file name]
-```{r empty}
-```
-### Output files and cut-offs applied 
-<b>Sample exclusion:</b> when there's only one contig detected and it is chimeric OR when there are multiple contigs with relatively low read support <br>
-<b>Plate needs to be examined:</b> fewer average read number than in corresponding positive control OR low general number of reads [likely partner-dependent]<br>
-<b>Sample needs to be examined:</b><br>
-  <ul>
-    <li>Included in the consensus fasta file:</li>
-    <ul>
-      <li>primary contig excluded as chimeric and replaced by the best secondary contig</li>
-      <li>secondary contig is an Arthropod and has a comparable number of reads to the primary hit</li>
-    </ul>
-    <li>Excluded from the consensus fasta file:</li>
-    <ul>
-      <li>negative control has higher than expected number of reads [upper 2%]</li>
-    </ul>
-  </ul>
-
 ```{r load_libraries}
 # Load required libraries; All libraries should be automatically installed in the environment
 load_pkgs <- function(pkg, bioconductor = FALSE) {
@@ -179,7 +154,7 @@ sample_metadata <- data.frame(max_read_pcont = max(p_cont_stats$Count),
 p_cont_stats %>% 
   ggplot(aes(x = Count)) +
   geom_histogram(binwidth = 10, fill = "#07dbd0", color = "#1c67fc", linewidth = 0.5) +
-  labs(title = "Distribution of reads in positive controls", x = "Read count", y = "Frequency") +
+  labs(title = "Distribution of reads in positive controls [binwidth = 10]", x = "Read count", y = "Frequency") +
   theme_classic() +
   geom_vline(aes(xintercept = mean(Count)), color = "#1c67fc", linetype = "solid", linewidth = 0.5) + 
   geom_vline(aes(xintercept = p_cont_quantiles[1]), color = "#db5f07", linetype = "dotted", linewidth = 0.5) +
@@ -287,12 +262,12 @@ stretch_trans <- scales::trans_new(
 # Calculate maximum y
 basic_plot <- n_cont_stats %>%
   ggplot(aes(x = Count)) +
-  geom_histogram(binwidth = 5, fill = "#07dbd0", color = "#1c67fc", linewidth = 0.5)
+  geom_histogram(binwidth = 1, fill = "#07dbd0", color = "#1c67fc", linewidth = 0.5)
 # Extract maximum count from the plot object
 max_count <- max(ggplot_build(basic_plot)$data[[1]]$count)
 # Plot negative control distribution
 n_cont_plot <- basic_plot +
-  labs(title = "Distribution of reads in all negative controls", x = "Read count", y = "Frequency") +
+  labs(title = "Distribution of reads in all negative controls [binwidth = 1]", x = "Read count", y = "Frequency") +
   theme_classic() +
   geom_vline(aes(xintercept = mean(Count)), color = "#1c67fc", linetype = "solid", linewidth = 0.5) + 
   geom_vline(aes(xintercept = n_cont_quantiles[6]), color = "#db5f07", linetype = "dotted", linewidth = 0.5) +
@@ -305,7 +280,7 @@ n_cont_plot <- basic_plot +
   )
 lysate_n_cont_plot <- lysate_n_cont %>% 
   ggplot(aes(x = Count)) +
-  geom_histogram(binwidth = 10, fill = "#07dbd0", color = "#1c67fc", linewidth = 0.5) +
+  geom_histogram(binwidth = 1, fill = "#07dbd0", color = "#1c67fc", linewidth = 0.5) +
   labs(title = "Lysate", x = "Read count", y = "Frequency") +
   theme_classic() +
   geom_vline(aes(xintercept = mean(Count)), color = "#1c67fc", linetype = "solid", linewidth = 0.5) + 
@@ -393,7 +368,7 @@ sample_metadata <- cbind(sample_metadata_s, sample_metadata)
 sample_stats %>% 
   ggplot(aes(x = Count)) +
   geom_histogram(binwidth = 10, fill = "#07dbd0", color = "#1c67fc", linewidth = 0.5) +
-  labs(title = "Distribution of reads in samples", x = "Read count", y = "Frequency") +
+  labs(title = "Distribution of reads in samples [binwidth = 10]", x = "Read count", y = "Frequency") +
   theme_classic() +
   geom_vline(aes(xintercept = mean(Count)), color = "#1c67fc", linetype = "solid", linewidth = 0.5) + 
   geom_vline(aes(xintercept = sample_quantiles[1]), color = "#db5f07", linetype = "dotted", linewidth = 0.5) +
@@ -784,7 +759,7 @@ Green squares: samples with positive control contamination<br><br>
 qc_secondary %>% 
   ggplot(aes(x = rep_count_primary)) +
   geom_histogram(binwidth = 1, fill = "#07dbd0", color = "#1c67fc", linewidth = 0.5) +
-  labs(title = "Number of reads [secondary sequences]", x = "Read count", y = "Frequency") +
+  labs(title = "Number of reads [secondary sequences; binwidth = 1]", x = "Read count", y = "Frequency") +
   theme_classic() +
   geom_vline(aes(xintercept = mean(rep_count_primary)), color = "#1c67fc", linetype = "solid", linewidth = 0.5) + 
   geom_vline(aes(xintercept = mean(p_cont_contamination$rep_count_primary)), color = "#db5f07", linetype = "dotted", linewidth = 0.5) +
@@ -837,14 +812,14 @@ n_cont_samples_qc_AM <- qc_AM %>% filter(pid %in% n_cont_stats$Label)
 combined_data <- n_cont_samples_qc_AM %>% filter(assignment %in% c("primary", "secondary"))
 basic_plot <- combined_data %>%
   ggplot(aes(x = rep_count_primary)) +
-  geom_histogram(binwidth = 5, fill = "#07dbd0", color = "#1c67fc", linewidth = 0.5)
+  geom_histogram(binwidth = 1, fill = "#07dbd0", color = "#1c67fc", linewidth = 0.5)
 # Extract maximum count 
 max_count <- max(ggplot_build(basic_plot)$data[[1]]$count)
 # Primary plot
 primary_ncont_hist <- n_cont_samples_qc_AM %>% filter(assignment == "primary") %>%
   ggplot(aes(x = rep_count_primary)) +
   geom_histogram(binwidth = 1, fill = "#07dbd0", color = "#1c67fc", linewidth = 0.5) +
-  labs(title = "Primary", x = "Read count", y = "Frequency") +
+  labs(title = "Primary [binwidth = 1]", x = "Read count", y = "Frequency") +
   theme_classic() +
   geom_vline(aes(xintercept = mean(rep_count_primary)), color = "#1c67fc", linetype = "solid", linewidth = 0.5) +
   scale_y_continuous(limits = c(0, max_count + 10), trans = stretch_trans) +
@@ -856,8 +831,8 @@ primary_ncont_hist <- n_cont_samples_qc_AM %>% filter(assignment == "primary") %
 # Secondary plot
 secondary_ncont_hist <- n_cont_samples_qc_AM %>% filter(assignment == "secondary") %>%
   ggplot(aes(x = rep_count_primary)) +
-  geom_histogram(binwidth = 0.5, fill = "#07dbd0", color = "#1c67fc", linewidth = 0.5) +
-  labs(title = "Secondary", x = "Read count", y = "Frequency") +
+  geom_histogram(binwidth = 1, fill = "#07dbd0", color = "#1c67fc", linewidth = 0.5) +
+  labs(title = "Secondary [binwidth = 1]", x = "Read count", y = "Frequency") +
   theme_classic() +
   geom_vline(aes(xintercept = mean(rep_count_primary)), color = "#1c67fc", linetype = "solid", linewidth = 0.5) +
   scale_y_continuous(limits = c(0, max_count + 10), trans = stretch_trans) +
@@ -1093,7 +1068,7 @@ no_tax_samples <- qc_tsv_no_cont %>% filter(pid %in% no_tax_samples)
 ```{r sequence_length_histogram, fig.align='center', fig.width=4.8, fig.height=2}
 all_length_plot <- ggplot(qc_tsv_no_cont, aes(x = seq_length)) +
   geom_histogram(binwidth = 10, fill = "#07dbd0", color = "#1c67fc", linewidth = 0.5) +
-  labs(title = "All sequences", x = "Sequence Length", y = "Frequency") +
+  labs(title = "All sequences [binwidth = 10]", x = "Sequence Length", y = "Frequency") +
   theme_classic() +
   theme(
     plot.title = element_text(size = 7), 
@@ -1511,16 +1486,16 @@ qc_tsv_arthropod_primary <- qc_tsv_arthropod_primary %>%
     TRUE ~ 12  # To check if anything goes wrong with filtering 
   )) %>%
   mutate(category_explanation = case_when(
-    category == 1 ~ "Only one sequence with more than 200 reads",
-    category == 2 ~ "Only one sequence with 50 to 200 reads",
-    category == 3 ~ "Only one sequence with more than 5 but less than 50 reads",
-    category == 4 ~ "Dominant sequence with more than 200 reads, non-conflicting secondary sequences with 5 or less read support",
-    category == 5 ~ "Dominant sequence with 50 to 200 reads, non-conflicting secondary sequences with 5 or less read support",
-    category == 6 ~ "Dominant sequence with more than 200 reads, conflicting secondary sequences with 5 or less read support",
-    category == 7 ~ "Dominant sequence with 50 to 200 reads, conflicting secondary sequences with 5 or less read support",
+    category == 1 ~ "Only one sequence with more than 200 reads, no secondary sequence detected",
+    category == 2 ~ "Only one sequence with 50 to 200 reads, no secondary sequence detected",
+    category == 3 ~ "Only one sequence with 5 or more but less than 50 reads, no secondary sequence detected",
+    category == 4 ~ "Dominant sequence with more than 200 reads, non-conflicting secondary sequences with 5 or less reads",
+    category == 5 ~ "Dominant sequence with 50 to 200 reads, non-conflicting secondary sequences with 5 or less reads",
+    category == 6 ~ "Dominant sequence with more than 200 reads, conflicting secondary sequences with 5 or less reads",
+    category == 7 ~ "Dominant sequence with 50 to 200 reads, conflicting secondary sequences with 5 or less read",
     category == 8 ~ "Dominant sequence with more than 200 reads, secondary sequences with more than 5 read support",
-    category == 9 ~ "Dominant sequence with 50 to 200 reads, secondary sequences with more than 5 read supportt",
-    category == 10 ~ "Dominant sequence with more than 5 but less than 50 reads, non-conflicting secondary sequences with 5 or less read support",
+    category == 9 ~ "Dominant sequence with 50 to 200 reads, secondary sequences with more than 5 read support",
+    category == 10 ~ "Dominant sequence with 5 or more but less than 50 reads, non-conflicting secondary sequences with less than 5 reads",
     category == 11 ~ "Dominant sequence with more than 5 but less than 50 reads, any other secondary reads present",
     category == 12 ~ "no_category"  # To check if anything goes wrong with filtering 
   )) %>%
@@ -1598,9 +1573,9 @@ generalHeatmap("rep_count_primary", "No, Primary Sequences")
 # Sequence length distribution 
 qc_tsv_arthropod_primary %>% 
   ggplot(aes(x = seq_length)) + 
-  geom_histogram(binwidth = 5, fill = "#07dbd0", color = "#1c67fc", linewidth = 0.5) +
+  geom_histogram(binwidth = 1, fill = "#07dbd0", color = "#1c67fc", linewidth = 0.5) +
   theme_classic() +
-  labs(x = "Sequence Length", y = "Frequency") +
+  labs(x = "Sequence Length [binwidth = 1]", y = "Frequency") +
   theme(
     plot.title = element_text(size = 7), 
     axis.title = element_text(size = 7),
@@ -1616,7 +1591,7 @@ fasta_file_path <- paste(output_path, "filtered_sequences_", batch_no, ".fasta",
 writeXStringSet(sequences_filtered, filepath = fasta_file_path)
 
 # Filtered fastas 
-qc_tsv_arthropod_primaryBOLD <- qc_tsv_arthropod_primary # %>% filter(category_decision != "NO")
+qc_tsv_arthropod_primaryBOLD <- qc_tsv_arthropod_primary %>% filter(category_decision == "YES")
 sequences_filtered_BOLDfiltered <- DNAStringSet(qc_tsv_arthropod_primaryBOLD$sequence)
 names(sequences_filtered_BOLDfiltered) <- qc_tsv_arthropod_primaryBOLD$pid # What should be the name?? 
 # Save the fasta file 
