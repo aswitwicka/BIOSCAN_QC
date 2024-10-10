@@ -1,5 +1,9 @@
 # BIOSCAN QC
 This script generates a BIOSCAN QC report and filters one consensus sequence per sample using output files from mBRAVE. It is designed specifically for processing the Wellcome Sanger Institute BIOSCAN data. <br> <br> 
+<p align="center">
+  <img src="./2024Sep_QC2.png" alt="QC Repor"/>
+</p>
+
 ## Installation
 No installation is required when running this script on Farm.
 ## Usage
