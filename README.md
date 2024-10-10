@@ -62,6 +62,7 @@ The QC process is divided into parts:<br>
 The script evaluates the quality of the sequencing run by providing statistics for both control and sample data and quality assessments of the partner and UMI plates.<br>
 
 Statistics for the positive controls <br>
+Positive controls are always in G12
 - Total number of positive conrols per batch and per plate.
 - Total number of reads in positive controls.
 - Maximum and minimum number of reads in positive controls and the associated positive control samples.
@@ -70,6 +71,8 @@ Statistics for the positive controls <br>
 - Number and names of positive controls in the lower 5% quantile and the names of associated partners.
 
 Statistics for the negative controls <br>
+<b>Lysate controls:</b> H12 and any wells left empty by the partners on partially empty plates <br> 
+<b>Empty control:</b> one well per plate selected at random [insect automatically excluded]
 - Total number of negative controls. Numbers of empty and lysate negative controls in a given batch.
 - Number of negative controls per plate.
 - Total number of reads in empty and lysate negative controls.
