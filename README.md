@@ -171,7 +171,8 @@ The report displays the above table with the number of samples assigned to each 
 <br><br><br>
 <i>Final assessments and plots </i><br><br>
 This part contains:
-- Big heatmap showing the number or reads supporting the consensus sequence selected for each retained sample.
+- Big heatmap showing the number or sequenced reads per plate well.
+- Two similar heatmaps showing the read support for the consesnus sequence. The first heatmap shows all reatined consesus sequences. The second heatmap shows only samples where the decison catogory = YES.
 - Histogram showing the sequence length distribution across the retained samples. 
 - Tables with percentages of retained samples per partner, partner plate, and UMI plate. 
 - All partner plates and UMI plates displayed as heatmaps.
