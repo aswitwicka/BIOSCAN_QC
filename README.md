@@ -112,10 +112,10 @@ First, the script will merge the mBRAVE consensusseq_network.tsv and consensusse
 Positive control as contamination source <br>
 - List of non-positve control samples that contain positive control reads [based on the positive control OTU].
 - Number of samples with positive control reads as primary or secondary sequence.
-- Plot showing the location of the contaminants relative to the source for both the partner and UMI plates.
+- Heatmap plot showing the location of the contaminants relative to the source for both the partner and UMI plates. Colour of the squares reflect the number of reads. Negative controls are outlined, colour of the outline correspond with partners. Squares that are not outlined represent potential sources of contamination within plates: identical sequences found within these wells and negative controls. Negative controls with within the higher 2% quantile of reads have thicker chartreuse outline.<br><b>NOTE:</b> No Bovidae reads are insluded at this step. The current setup allows for a change of 2 nucleotides in the sequence - the sequences found in samples and the negative controls may not be 100% identical [minimum 99.695%]. 
 - Histogram of read counts of all secondary sequences across all samples. It is here to assess whether the contamination level in samples that contain secondary positive control sequences is comarable to the contamination level in samples that contain other unidentified sequences [potential micro sphashes].
 Usually, the number of secondary sequence reads resulting from random splashes is higher than the number of contamination reads from positive control samples. However, the lines should be in close proximity.
-- At this point, if there's a sample with positive control as a primary sequence, it is going to be replaced with the best [highest read count and similarity score] secondary arthropod sequence.
+- At this point, if there's a sample with positive control as a primary sequence, it is going to be replaced with the best [highest read count and similarity score] secondary arthropod sequence or excluded if there's not suitable sequence replacement. 
 
 
 Negative control contamination<br>
