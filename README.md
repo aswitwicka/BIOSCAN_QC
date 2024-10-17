@@ -153,7 +153,7 @@ In the next step, all secondary sequences are removed, leaving only the primary 
 
 Further, all retained samples get assigned a quality score: 
 
-| Score | No. reads in primary | Secondary sequence assessment [the same family or order]                                | Decision     |
+| Score | No. reads in primary | Sample description [secondary sequence assessment]                               | Decision     |
 |-------|----------------------|--------------------------------------------------------------|-----------------------------------------|
 | <b>1</b> | > 200   | Only one sequence with more than 200 reads, no secondary sequence detected                             |YES |
 | <b>2</b> | 50 - 200| Only one sequence with 50 to 200 reads, no secondary sequence detected                                 |YES |
