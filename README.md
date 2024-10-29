@@ -145,7 +145,16 @@ The next step is detection of Anopheles mosquitoes [BOLD:AAA3436] that BIOSCAN u
 
 The next step is evaluation of secondary arthropod sequences in the remaining samples. The report displays how many samples have no conflicts at all, meaning that in a given well only one sequence is present. Next, all sesuences [primary and secondary] get removed if they have less than 5 reads. The number of excluded and retained samples is displayed in a table. Fewer than 5 reads cannot confidently support the sample. This cut-off was established based on the manual examination of 30 photos per read count per sample [see figure below]. Photos were divided into two categories: correct family-level taxonomy and incorrect family-level taxonomy. As well as on the average number of reads in negative controls from 10 sequencing batches [N samples] indicationg that anything lower than 5 reads may be a cross-contamination from neighbouring samples. 
 
-FIGURE PLACEHOLDER - manual photo examination, negative control examination, anopheles read examination in secondary datas. 
+<p align="center">
+  <img src="./taxonomy_family_level2.png" alt="QC Repor"/>
+</p>
+Figure 1. DESCRIPTION
+<br><br>
+<p align="center">
+  <img src="./contaminant_level.png" alt="QC Repor"/>
+</p>
+Figure 2. DESCRIPTION
+<br><br>
 
 Further, the script identifies secondary sequences that are not found elsewhere on the same partner or UMI plate where the sample was processed. These sequences, along with the corresponding sample information, are then saved to a separate file for further evaluation. Simirarly, information about secondary sequences that are in conflict with the primary sequence gets saved to a seperate file. Conflicts are understood as a different family or order classification of two sequences within a sample. In the previous version only conflicting sequences with read support of more 50 reads when the primary sequence is supported by 100 or more reads or more than 50% of the primary sequence read count were retained. Currently, all conflicts are saved for further evaluation and the samples that meet the mentioned read count criteria get flagged within the output file. 
 
@@ -173,7 +182,12 @@ The report displays the above table with the number of samples assigned to each 
   <img src="./qc-catogory-boxplot.png" alt="QC Repor"/>
 </p>
 Figure 3. Number of samples assigned to each of the quality scores within 20 sequencing batches. 
-<br><br><br>
+<br><br>
+<p align="center">
+  <img src="./taxonomy_bias.png" alt="QC Repor"/>
+</p>
+Figure 4. DESCRIPTION
+<br><br>
 <i>Final assessments and plots </i><br><br>
 This part contains:
 - Big heatmap showing the number or sequenced reads per plate well.
