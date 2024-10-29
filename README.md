@@ -168,6 +168,11 @@ Further, all retained samples get assigned a quality score:
 | <b>11</b>| 6 - 49  | Dominant sequence with more than 5 but less than 50 reads, any other secondary reads present<br>[conflicting or not]|NO  | 
 
 The report displays the above table with the number of samples assigned to each category. The categories are also included in the final sample metadata. The Decision table indicates whether the samples assigned these categories are going to be included in the BOLD upload. 
+
+<p align="center">
+  <img src="./qc-catogory-boxplot.png" alt="QC Repor"/>
+</p>
+Figure 3. Number of samples assigned to each of the quality scores within 20 sequencing batches. 
 <br><br><br>
 <i>Final assessments and plots </i><br><br>
 This part contains:
