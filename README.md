@@ -11,7 +11,7 @@ Submit an interactive job request:<br>
 ```bash
 bsub -Is -n 4 -R "select[mem>2000] rusage[mem=2000] span[hosts=1]" -M 2000 -G team222 bash
 ```
-Set the batch number [the batch number must match the name of the input data directory; replace X with number]:<br>
+Set the batch number [the batch number must match the name of the input data directory; replace X with a corresponding number]:<br>
 ```bash
 batch="batchX"
 ```
@@ -29,7 +29,7 @@ Rscript -e "rmarkdown::render(input = '/lustre/scratch126/tol/teams/lawniczak/us
 </p>
 
 ## Input
-The script requires the following files from the mBRAVE batch output:
+The script requires the following files from mBRAVE:
 <i>
 <li>sample_stats.txt 
 </li>
@@ -43,18 +43,18 @@ The script requires the following files from the mBRAVE batch output:
 </li>
 </i>
 <br>
-The fasta file should contain all sequences, not just the consensus sequences. No filtering should be applied when downloading data from mBRAVE. The names of the downloaded files should not be altered and should contain the batch number. <br><br>
-Additionally, the script automatically loads a .csv file with UMI indices from the Farm directory. <br>
+The fasta file should contain all sequences, not just the consensus sequences. No filtering should be applied when downloading data from mBRAVE. The names of the downloaded files should not be altered and should contain batch numbers and identifiers. <br><br>
+Additionally, the script automatically loads a .csv file with UMI indices from the Farm directory. The directories are set automatically and should not be altered. <br>
 
 ## Output
 The script generates the following output files:
 - <i>QCBioscan.html</i><br>Main QC report with plots, tables, and statistics for the sequencing run.
-- <i>filtered_metadata.csv</i><br>Metadata for samples that passed the QC with information for each sample. Only one Arthropod sequence information per samples is included. This file also contains the quality scores that each sample gets assigned [see below]. Controls are not included. 
-- <i>filtered_sequences.fasta</i><br>Consensus sequences for all samples included in the metadata, no matter the quality scores. This file must be filtered before submitting to BOLD. 
-- <i>read_summary_metadata.csv</i><br>Summary statistics for the sequencing run including sample numbers, control statistics, and quality scores. Further the tables can be combined across the batches to compare sequencing runs and to calculate statistics. 
+- <i>filtered_metadata.csv</i><br>Metadata for samples that passed the QC with information for each sample. Only one Arthropod sequence per sample is included. Two metadata files are generated: 1. Contains all samples that passed the QC and their quality scores [see below]; 2. Contains only samples with satisfactory quality scores. Controls are not included. 
+- <i>filtered_sequences.fasta</i><br>Consensus sequences for all samples included in the metadata. Two versions are generates: 1. Contains all sequences for samples that passed the QC; 2. Contains only sequences for samples with satisfactory quality scores [ready for BOLD upload].
+- <i>read_summary_metadata.csv</i><br>Summary statistics for the sequencing run including sample numbers, control statistics, and quality score distribution. The tables can be combined across the batches to compare sequencing runs and to calculate statistics. 
 - <i>unique_secondary_sequences.csv</i><br>Table of secondary sequences not found elsewhere on the partner or UMI plate [5 or more reads], retained for further secondary sequence analysis [parasites/symbionts].
-- <i>conflicts_family.csv and conflicts_order.csv</i><br>Tables of secondary sequences with good read support (> 50 reads or 50% or more of the primary sequence read) that were assigned to a different taxon than the primary sequence [family or order level], for further secondary sequence analysis [parasites/symbionts]. This cut-off is not used to exclude any samples. Rather, it is used to detect candidate samples that may have two different arthropods in them or have biologically relevant signals of two arthropods interacting. 
-- <i>tardigrada_nematoda_rotifera_annelida.csv and wolbachia.csv</i><br>Non-Arthropod sequences retained for further exploration. These files are not filtered for number of reads nor contain quality categories. These should be processed further if required. 
+- <i>conflicts.csv </i><br>Tables of conflicting secondary sequences detected across the samples. Sequences with good read support (> 50 reads or 50% or more of the primary sequence read) that were assigned to a different taxon than the primary sequence [family or order level] are flagged in these files for further secondary sequence analysis [parasites/symbionts]. This cut-off is not used to exclude any samples. Rather, it is used to detect candidate samples that may have two different arthropods in them or have biologically relevant signals of two arthropods interacting. 
+- <i>tardigrada_nematoda_rotifera_annelida.csv and wolbachia.csv</i><br>Non-Arthropod sequences and metadata retained for further exploration. These files are not filtered for number of reads nor contain quality categories. These should be processed further if required. 
 
 ## Documentation
 The QC process is divided into parts:<br>
@@ -63,7 +63,7 @@ The QC process is divided into parts:<br>
 3. <i>Final assessments and plots </i><br><br>
 
 <i>Assessment of the sequencing run</i><br><br>
-The script evaluates the quality of the sequencing run by providing statistics for both control and sample data and quality assessments of the partner and UMI plates.<br>
+The script evaluates the quality of the sequencing run by providing statistics for both control and sample data, and quality assessments of the partner and UMI plates.<br>
 
 Statistics for the positive controls <br>
 Positive controls are always in G12
@@ -97,7 +97,7 @@ Statistics for the samples <br>
 - Number of samples with 0 reads.
 
 Partner plate boxplot <br>
-The plot shows the read count per sample for each partner plate [each box]. Box colours indicate partners. The grey horisontal line shows the median, while the brown horisontal like indicates the mean. Blue data points show empty negative controls. Navy data points show lysate negative controls. Green data points show positive controls. 
+The plot shows the total read count per sample for each partner plate [each box]. Box colours indicate partners. The grey horisontal line shows the median, while the brown horisontal like indicates the mean. Blue data points show empty negative controls. Navy data points show lysate negative controls. Green data points show positive controls. 
 Boxes that are grey inside show plates where the 75th percentile of the data is lower than expected mean read count. These plates and flagged as 'low-performance' need further attention. 
 
 UMI plate boxplot <br> 
@@ -137,30 +137,32 @@ Assessment of primary and secondary sequences<br>
 - Number and percentage of EXCLUDED primary sequences.
 - Number and percentage of primary sequences with no taxonomy assigned.
 
-The next step is evaluation of samples with no taxonomy assigned. The first plot shows three histograms of sequence length distribution: I. All sequences; II. A random sexuence subset; III. All samples with no taxonomy assigned. These plots were used to evaluate whether shorter sequences systematically do not get mBRAVE taxonomy assigned to them. The script identifies sequences shorter than expected within those without assigned taxonomy and replaces them with the closest matching longer sequence within the well [on average 100 bp longer; Levenshtein distance < 150].
+The next step is evaluation of samples with no taxonomy assigned. The first plot shows three histograms of sequence length distribution: I. All sequences; II. A random sequence subset; III. All samples with no taxonomy assigned. These plots were used to evaluate whether shorter sequences systematically do not get mBRAVE taxonomy assigned to them. The script identifies sequences shorter than expected within those without assigned taxonomy and replaces them with the closest matching longer sequence within the well [on average 100 bp longer; Levenshtein distance < 150].
 
-The next step is evaluation of samples where the primary sequence is not an arthropod. Visual examination of over 50 photos revealed that when the reads come primarly from Bovidae, Nematoda, Annelida, Wolbachia, Rotifera, Tardigrada or human, the best [highest read count and similarity score] secondary sequence comes from the arthropod plated in the well, unless any other errors, including sequencing, occur. Therefore, the primary non-arthropod sequences get removed and replaced by the best secondary sequence. The report displays number of primary non-arthopod sequences in a batch seperated by phylum. Samples where exclusively non-arthropod sequences were detected get removed at this step. At this point Nematoda, Tardigrada, Rotifera, Annelida, and Wolbachia sequences and sample information gets saved to seperate output files. 
+The next step is evaluation of samples where the primary sequence is not an arthropod. Visual examination of over 50 photos revealed that when the reads come primarly from Bovidae, Nematoda, Annelida, Wolbachia, Rotifera, Tardigrada or human, the best [highest read count and similarity score] secondary sequence comes from the arthropod plated in the well, unless any other errors, including sequencing erros occur. Therefore, the primary non-arthropod sequences get removed and replaced by the best secondary sequence. The report displays number of primary non-arthopod sequences in a batch by phylum. Samples where exclusively non-arthropod sequences were detected get removed at this step. At this point Nematoda, Tardigrada, Rotifera, Annelida, and Wolbachia sequences and sample information gets saved to seperate output files. 
 
 The next step is detection of Anopheles mosquitoes [BOLD:AAA3436] that BIOSCAN uses as internal controls. These are going to be detected and evaluated only if campus samples are present in the batch. Samples with primary Anopheles sequence with 250 or more reads get counted and removed. Samples where Anopheles sequences are secondary are removed from further steps.
 
-The next step is evaluation of secondary arthropod sequences in the remaining samples. The report displays how many samples have no conflicts at all, meaning that in a given well only one sequence is present. Next, all sesuences [primary and secondary] get removed if they have less than 5 reads. The number of excluded and retained samples is displayed in a table. Fewer than 5 reads cannot confidently support the sample. This cut-off was established based on the manual examination of 30 photos per read count per sample [see figure below]. Photos were divided into two categories: correct family-level taxonomy and incorrect family-level taxonomy. As well as on the average number of reads in negative controls from 10 sequencing batches [N samples] indicationg that anything lower than 5 reads may be a cross-contamination from neighbouring samples. 
+The next step is evaluation of secondary arthropod sequences in the remaining samples. The report displays how many samples have no conflicts at all, meaning that in a given well only one sequence is present. Next, all sesuences [primary and secondary] get removed if they have less than 5 reads. The number of excluded and retained samples is displayed in a table. Fewer than 5 reads cannot confidently support the sample. This cut-off was established based on the manual examination of 30 photos per read count per sample [Figure 1]. Photos were divided into two categories: correct family-level taxonomy and incorrect family-level taxonomy. 
 
 <p align="center">
   <img src="./taxonomy_family_level2.png" alt="QC Repor"/>
 </p>
-<b>Figure 1. A.</b> Photo examination and identification to the family level shows that taxonomy-level identification by mBRAVE is more confident for samples with higher read support. Namely, when samples have only 1 read, the majority of specimens get wrong family level taxonomy assigned to them; in samples with 5 or more reads, the error rates is around 10%; this error rate gets reduced grately when the read count reaches 50 or more reads for the consensus sequence. These cut-offs (5 and 50 read support) were applied in the sample quality scores to exclude samples with too low read support (less than 5 reads), and samples with conflicting sequences (less than 50 reads). <b>B.</b> Breakdown of the number of samples from 23 sequencing runs assigned to four categories depending on the read count. The majority of samples obtain have over 200 reads supporting the consensus sequence. The likelyhood of taxonomy assignment does not change across categories, with exception where samples with more than 100 read support have fewer samples with no taxonomy assigned to them at all. It is important to note that the taxonomy assigned to samples by mBRAVE may be incorrect as shown in the first plot. 
+<b>Figure 1. A.</b> Photo examination and identification to the family level indicate that familt-level taxonomic identification by mBRAVE is more accurate for samples with higher read support. Specifically, when samples have only one read, the majority of specimens are assigned incorrect family-level taxonomy. In samples with five or more reads, the error rate is around 10%. This error rate is significantly reduced when the read count reaches approximately 50 reads for the consensus sequence. These cut-offs (5 and 50 reads) were applied to sample quality scores to exclude samples with insufficient read support (fewer than 5 reads) and those with conflicting sequences (fewer than 50 reads).
+<b>B.</b> Breakdown of the number of samples from 23 sequencing runs categorized by read count. The majority of samples have over 200 reads supporting the consensus sequence. The likelihood of accurate taxonomy assignment does not change significantly across categories, except in cases where samples with more than 100 reads have fewer instances of no taxonomy assigned. It is crucial to note that the taxonomy assigned to samples by mBRAVE may still be incorrect, as shown in the first plot.
 <br><br>
 <p align="center">
   <img src="./contaminant_level.png" alt="QC Repor"/>
 </p>
-<b>Figure 2. A.</b> Eight <i>Anopheles</i> sp. individuals were added at random to the Campus Plates (Wellcome Sanger Institute). The plot represents the read count of these mosqitos detected in other samples as secondary (contamination) reads. In 99% of cases, the read support was ~52 reads or lower. For this reason, we apply the cut-off of 50 reads to support samples with any secondary reads detected, because the sequence detected may be a contamination and not the actual insect. <b>B.</b> Distribution of read support in the empty negative controls. Empty negative controls are picked at random by excluding an insect from each plate. 95% of primary sequences detected had ~30 reads supporting them. This is lower than 50. But we did detect reads up to 320 read support. Showing that contamination across plates, albait rare, can happen at relatively high levels, where the primary sequence that comes from the sampled insect "compets" with the contaminant. This information was applied to samples and we do not accept any samples with secondary sequences that have more than 5 read support. 
+<b>Figure 2. A.</b> Eight <i>Anopheles</i> sp. individuals were randomly added to the Campus Plates (Wellcome Sanger Institute). The plot represents the read count of these mosquitoes detected in other samples as secondary (contamination) reads. In 99% of cases, the read support for these secondary reads was approximately 52 reads or lower. Therefore, we apply a cut-off of 50 reads to support primary sequences in samples with any secondary reads detected, as the detected sequence may represent contamination rather than the actual insect.
+<b>B.</b> Distribution of read support in the empty negative controls. Empty negative controls are randomly selected by excluding an insect from each plate. In 95% of cases, the primary sequences detected in these controls had around 30 reads supporting them, which is lower than the 50-read threshold. However, we did observe read counts as high as 320, indicating that cross-plate contamination, though rare, can occur at relatively high levels. In these cases, the primary sequence from the sampled insect may "compete" with the contaminant sequence. Based on this information, we temporarily exclude any samples with secondary sequences that have more than 5 reads of support and retain them for further conflict assessment.
 <br><br>
 
-Further, the script identifies secondary sequences that are not found elsewhere on the same partner or UMI plate where the sample was processed. These sequences, along with the corresponding sample information, are then saved to a separate file for further evaluation. Simirarly, information about secondary sequences that are in conflict with the primary sequence gets saved to a seperate file. Conflicts are understood as a different family or order classification of two sequences within a sample. In the previous version only conflicting sequences with read support of more 50 reads when the primary sequence is supported by 100 or more reads or more than 50% of the primary sequence read count were retained. Currently, all conflicts are saved for further evaluation and the samples that meet the mentioned read count criteria get flagged within the output file. 
+Next, the script identifies secondary sequences that are not found elsewhere on the same partner or UMI plate where the sample was processed. These sequences, along with the corresponding sample information, are saved to a separate file for further evaluation. Similarly, information about secondary sequences that conflict with the primary sequence is saved to another separate file. Conflicts are defined as cases where two sequences within a sample have different family or order classifications. In the previous version, only conflicting sequences with read support of more than 50 reads were retained if the primary sequence was supported by 100 or more reads or had more than 50% of the primary sequence's read count. Currently, all conflicts are saved for further evaluation, and samples that meet the specified read count criteria are flagged within the output file.
 
-In the next step, all secondary sequences are removed, leaving only the primary arthropod sequences. The report then displays the number and percentage of retained samples. 
+In the next step, all secondary sequences are removed, leaving only the primary arthropod sequences [or primary sequences with no taxonomy assigned]. The report then displays the number and percentage of retained samples. 
 
-Further, all retained samples get assigned a quality score: 
+At this step, all retained samples get assigned a quality score: 
 
 | Score | No. reads in primary | Sample description [secondary sequence assessment]                               | Decision     |
 |-------|----------------------|--------------------------------------------------------------|-----------------------------------------|
@@ -176,22 +178,22 @@ Further, all retained samples get assigned a quality score:
 | <b>10</b>| 6 - 49  | Dominant sequence with 5 or more but less than 50 reads, non-conflicting secondary sequences with less than 5 reads |NO  |
 | <b>11</b>| 6 - 49  | Dominant sequence with more than 5 but less than 50 reads, any other secondary reads present<br>[conflicting or not]|NO  | 
 
-The report displays the above table with the number of samples assigned to each category. The categories are also included in the final sample metadata. The Decision table indicates whether the samples assigned these categories are going to be included in the BOLD upload. 
+The report displays the above table with the number of samples assigned to each category. The categories are also included in the final sample metadata. The Decision column indicates whether the samples assigned these categories are going to be included in the BOLD upload. 
 
 <p align="center">
   <img src="./qc-catogory-boxplot.png" alt="QC Repor"/>
 </p>
-Figure 3. Number of samples assigned to each of the quality scores within 20 sequencing batches. 
+Figure 3. Number of samples assigned to each of the quality scores within 20 sequencing batches. The majority of samples are of good quality and do not contain conflicting nor secondary sequences. Samples within categories 8 to 11 will be examined further. 
 <br><br>
 <p align="center">
   <img src="./taxonomy_bias.png" alt="QC Repor"/>
 </p>
-Figure 4. DESCRIPTION
+Figure 4. EEvaluation of order-level taxonomic assignment to samples based on their read support for the primary consensus sequence. The plot on the right shows the breakdown of small insect orders. The distribution of orders is not associated with read support, indicating that no specific orders are more likely to be poorly sequenced or excluded due to the applied quality control cut-offs, thereby causing potential biases in the data. The only order found in categories that could potentially be excluded if secondary sequences are present is Megaloptera. However, as only a few individuals from this order were detected, further evaluation is necessary to assess any potential biases.
 <br><br>
 <i>Final assessments and plots </i><br><br>
 This part contains:
-- Big heatmap showing the number or sequenced reads per plate well.
-- Two similar heatmaps showing the read support for the consesnus sequence. The first heatmap shows all reatined consesus sequences. The second heatmap shows only samples where the decison catogory = YES.
+- Big heatmaps showing the number or sequenced reads per plate well.
+- Two similar heatmaps showing the read support for the consesnus sequence. The first heatmap displays all retained consensus sequences, the second heatmap shows only the samples in which the decision category indicates they will be retained for BOLD upload.
 - Histogram showing the sequence length distribution across the retained samples. 
 - Tables with percentages of retained samples per partner, partner plate, and UMI plate. 
 - All partner plates and UMI plates displayed as heatmaps.
