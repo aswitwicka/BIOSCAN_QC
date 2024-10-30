@@ -183,12 +183,12 @@ The report displays the above table with the number of samples assigned to each 
 <p align="center">
   <img src="./qc-catogory-boxplot.png" alt="QC Repor"/>
 </p>
-Figure 3. Number of samples assigned to each of the quality scores within 20 sequencing batches. The majority of samples are of good quality and do not contain conflicting nor secondary sequences. Samples within categories 8 to 11 will be examined further. 
+<b>Figure 3.</b> Number of samples assigned to each of the quality scores within 20 sequencing batches. The majority of samples are of good quality and do not contain conflicting nor secondary sequences. Samples within categories 8 to 11 will be examined further. 
 <br><br>
 <p align="center">
   <img src="./taxonomy_bias.png" alt="QC Repor"/>
 </p>
-Figure 4. EEvaluation of order-level taxonomic assignment to samples based on their read support for the primary consensus sequence. The plot on the right shows the breakdown of small insect orders. The distribution of orders is not associated with read support, indicating that no specific orders are more likely to be poorly sequenced or excluded due to the applied quality control cut-offs, thereby causing potential biases in the data. The only order found in categories that could potentially be excluded if secondary sequences are present is Megaloptera. However, as only a few individuals from this order were detected, further evaluation is necessary to assess any potential biases.
+<b>Figure 4.</b> EEvaluation of order-level taxonomic assignment to samples based on their read support for the primary consensus sequence. The plot on the right shows the breakdown of small insect orders. The distribution of orders is not associated with read support, indicating that no specific orders are more likely to be poorly sequenced or excluded due to the applied quality control cut-offs, thereby causing potential biases in the data. The only order found in categories that could potentially be excluded if secondary sequences are present is Megaloptera. However, as only a few individuals from this order were detected, further evaluation is necessary to assess any potential biases.
 <br><br>
 <i>Final assessments and plots </i><br><br>
 This part contains:
