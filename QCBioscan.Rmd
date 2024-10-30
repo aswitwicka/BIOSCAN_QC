@@ -596,9 +596,11 @@ unique_plates <- stats_table_comb_failed %>% arrange(partner_plate) %>% pull(par
 plot_list_counts <- list()
 heatmapPlate(unique_plates, stats_table_comb_failed, plot_list_counts)
 ```
+
+
 ### Assessment of sequence conflicts and contaminants
 
-<br>
+
 <b>Positive control as contamination source</b>
 ```{r otu_data_handling}
 # Remove failed samples - samples with no reads at all! 
@@ -1155,7 +1157,7 @@ keep_no_tax$assignment <- "primary"
 qc_tsv_no_cont <- qc_tsv_no_cont %>% filter(!(pid %in% keep_no_tax))
 qc_tsv_no_cont <- rbind(qc_tsv_no_cont, keep_no_tax)
 # Add to metadata 
-sample_metadata <- cbind(sample_metadata_s, sample_metadata, data.frame(no_short_seq_replaced = length(unique(most_similar_sequences_display$pid))))
+sample_metadata <- cbind(sample_metadata, data.frame(no_short_seq_replaced = length(unique(most_similar_sequences_display$pid))))
 ```
 <b>If the first entry is not 'Arthropod', then the second entry is likely correct [based on manual observations]</b>
 ```{r non_arthropod_primary_contig_replacement}
@@ -1166,7 +1168,7 @@ csv_file_path <- paste(output_path, "wolbachia_", batch_no, ".csv", sep = "")
 write.csv(qc_tsv_wolb, file = csv_file_path, row.names = FALSE)
 qc_tsv_stuff <- qc_tsv_no_cont %>% filter(p_primary == "Nematoda" | p_primary == "Tardigrada" | p_primary == "Rotifera" | p_primary == "Annelida")
 cat(paste("Number of samples with Nematoda, Tardigrada, Annelida, and/or Rotifera detected:", nrow(qc_tsv_stuff), "\n\nTable with plate positions, number of reads, and sequences saved to the output directory:\n", output_path))
-csv_file_path <- paste(output_path, "tardigrada_nematoda_rotifera_stuff_", batch_no, ".csv", sep = "")
+csv_file_path <- paste(output_path, "tar_nem_rot_ann_", batch_no, ".csv", sep = "")
 write.csv(qc_tsv_stuff, file = csv_file_path, row.names = FALSE)
 
 # Select samples that are not Arthropods but do have taxonomy assigned to them
@@ -1194,8 +1196,7 @@ for(i in seq_len(nrow(qc_tsv_no_arth_prim))) {
 # Remove everything that is not an arthropod at this point
 qc_tsv_arthropod_primary <- qc_tsv_arthropod_primary %>% filter(p_primary == "Arthropoda" | p_primary == "None")
 # Add to metadata
-sample_metadata <- cbind(sample_metadata_s, sample_metadata, data.frame(no_replaced_non_arthropods = length(unique(non_arth_primary_samples$pid))))
-
+sample_metadata <- cbind(sample_metadata, data.frame(no_replaced_non_arthropods = length(unique(non_arth_primary_samples$pid))))
 # Remove anopheles
 anopheles_pids <- qc_tsv_arthropod_primary %>% filter(otu_primary == "BOLD:AAA3436") %>% pull(pid) %>% unique()
 anopheles_samples_all <- qc_tsv_arthropod_primary %>% filter(pid %in% anopheles_pids)
@@ -1497,9 +1498,9 @@ summary2 <- table(qc_tsv_arthropod_primary$category_explanation) %>% as.data.fra
 summary_merge <- merge(summary2,summary1, by = "Freq")
 summary_merge <- summary_merge %>%
   mutate(Decision = case_when(
-    Category %in% c(1:7) ~ "YES",
-    Category %in% c(8:11) ~ "NO",
-    Category == 12 ~ "no_category"
+    Var1.y %in% c(1:7) ~ "YES",
+    Var1.y %in% c(8:11) ~ "NO",
+    Var1.y == 12 ~ "no_category"
   ))
 colnames(summary_merge) <- c("Number of samples", "Description", "Category", "Decision")
 knitr::kable(summary_merge %>% arrange(Category), format = "html") %>% 
@@ -1562,7 +1563,7 @@ generalHeatmap("rep_count_primary", "No, Primary Sequences")
 ```{r length_histogram, fig.align='center', fig.width=2.5, fig.height=2}
 # Prepare for saving
 # Sequence length distribution 
-qc_tsv_arthropod_primary %>% 
+qc_tsv_arthropod_primary %>% filter(category_decision == "YES") %>%
   ggplot(aes(x = seq_length)) + 
   geom_histogram(binwidth = 1, fill = "#07dbd0", color = "#1c67fc", linewidth = 0.5) +
   theme_classic() +
@@ -1604,7 +1605,8 @@ cat(paste("Final fasta file succesfully saved:", fasta_file_path,
 
 <br><b>Number of retained samples per partner plate</b><br>
 ```{r retained_per_plate}
-retained_samples <- qc_tsv_arthropod_primary %>% pull(Sample.Plate.ID) %>% table() %>% as.data.frame() %>% arrange(-Freq)
+retained_samples <- qc_tsv_arthropod_primary %>% filter(category_decision == "YES") %>% 
+  pull(Sample.Plate.ID) %>% table() %>% as.data.frame() %>% arrange(-Freq)
 colnames(retained_samples) <- c("Plate", "Number of samples after filtering")
 all_sample_plates <- sample_stats %>% pull(Sample.Plate.ID) %>% table() %>% as.data.frame() %>% arrange(-Freq)
 colnames(all_sample_plates) <- c("Plate", "Original number of samples")
@@ -1617,7 +1619,8 @@ knitr::kable(retained_samples, format = "html") %>%
 ```
 <br><b>Number of retained samples per partner</b><br>
 ```{r retained_per_paertner}
-retained_partners <- qc_tsv_arthropod_primary %>% pull(partner_plate) %>% table() %>% as.data.frame() %>% arrange(-Freq)
+retained_partners <- qc_tsv_arthropod_primary %>% filter(category_decision == "YES") %>%
+  pull(partner_plate) %>% table() %>% as.data.frame() %>% arrange(-Freq)
 colnames(retained_partners) <- c("Partner", "Number of samples after filtering")
 sample_stats <- sample_stats %>% mutate(partner_plate = str_extract(Label, "^[^_]+"))
 all_sample_parthers <- sample_stats %>% pull(partner_plate) %>% table() %>% as.data.frame() %>% arrange(-Freq)
@@ -1631,7 +1634,8 @@ knitr::kable(retained_partners, format = "html") %>%
 ```
 <br><b>Number of retained samples per UMI plate</b><br>
 ```{r retained_per_umi}
-retained_partners <- qc_tsv_arthropod_primary %>% pull(UMI.Plate.ID) %>% table() %>% as.data.frame() %>% arrange(-Freq)
+retained_partners <- qc_tsv_arthropod_primary %>% filter(category_decision == "YES") %>% 
+  pull(UMI.Plate.ID) %>% table() %>% as.data.frame() %>% arrange(-Freq)
 colnames(retained_partners) <- c("Plate", "Number of samples after filtering")
 all_sample_parthers <- sample_stats %>% pull(UMI.Plate.ID) %>% table() %>% as.data.frame() %>% arrange(-Freq)
 colnames(all_sample_parthers) <- c("Plate", "Original number of samples")
