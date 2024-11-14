@@ -27,7 +27,7 @@ Rscript -e "rmarkdown::render(input = '/lustre/scratch126/tol/teams/lawniczak/us
 ```
 <br>
 <p align="center">
-  <img src="./2024Sep_QC.png" alt="QC Repor"/>
+  <img src="./2024Sep_QCoutline.png" alt="QC Repor"/>
 </p>
 
 ## Glossary
@@ -69,8 +69,8 @@ The script generates the following output files:
 - <i>QCBioscan.html</i><br>Main QC report with plots, tables, and statistics for the sequencing batch.
 - <i>filtered_metadata.csv</i><br>Metadata for samples that passed the QC with further details on each sample. Only one Arthropod sequence per sample is included. Two metadata files are generated: 1. Contains all samples that passed the QC and their confidence category [see Table 1]; 2. Contains only samples with confidence category from 1 to 7 [see Table 1]. Controls are not included. 
 - <i>filtered_sequences.fasta</i><br>Consensus sequences for all samples included in the metadata. Two versions are generates: 1. Contains all sequences for samples that passed the QC; 2. Contains only sequences for samples with confidence category from 1 to 7 [ready for BOLD upload].
-- <i>read_summary_metadata.csv</i><br>Summary statistics for the sequencing batch including sample numbers, control statistics, and number of samples assigned to all confidence categories [see Table 1]. The tables can be combined across the batches to compare sequencing batches and to calculate statistics. 
-- <i>unique_secondary_sequences.csv</i><br>Table of secondary sequences not found elsewhere on the partner or UMI plate [5 or more reads], retained for further secondary sequence analysis [parasites/symbionts].
+- <i>read_summary_metadata.csv</i><br>Summary statistics for the sequencing batch including sample numbers, control statistics, and number of samples assigned to all confidence categories [see Table 1]. The tables can be combined across the batches to compare sequencing batches and to calculate statistics.
+- <i>retained_percentage.csv</i><br>Three tables showing number and percentage of samples retained after the QC process and after retaining only samples with confidence categories of 1-7 [see Table 1] per: 1. Partner plate; 2. UMI plate; 3. Partner. 
 - <i>conflicts.csv </i><br>Tables of conflicting secondary sequences detected across the samples. Secondary sequences with good read support [> 50 reads or 50% or more of the primary sequence read] that were assigned to a different taxon than the primary sequence at family or order level are flagged in these files for further secondary sequence analysis [parasites/symbionts]. These thresholds are not used to exclude any samples. Rather, they are used to detect candidate samples that may have two different arthropods in them or have biologically relevant signals of two arthropods interacting. 
 - <i>tardigrada_nematoda_rotifera_annelida.csv and wolbachia.csv</i><br>Non-Arthropod sequences and metadata retained for further exploration. These files are not filtered for number of reads nor contain quality categories. These should be processed further if required. 
 
@@ -170,7 +170,7 @@ At this point, control samples are no longer included. No samples have been remo
 <b>B.</b> Distribution of read support in the empty negative controls. Empty negative controls are randomly selected by excluding an insect from each plate. In 95% of cases, the primary sequences detected in these controls had around 30 reads supporting them, which is lower than the 50-read threshold. However, we did observe read counts as high as 320, indicating that cross-plate contamination, though rare, can occur at relatively high levels. In these cases, the primary sequence from the sampled insect may "compete" with the contaminant sequence. Based on this information, we temporarily exclude any samples with secondary sequences that have more than 5 reads of support and retain them for further conflict assessment.
 <br><br>
 
-2.8. Next, the script identifies secondary sequences that are not found elsewhere on the same partner or UMI plate where the sample was processed. These sequences, along with the corresponding sample information, are saved to a separate file for further evaluation. Similarly, information about secondary sequences that conflict with the primary sequence is saved to another separate file. Conflicts are defined as cases where primary and secondary sequences within a sample have different family or order classifications. Conflicts are saved for further evaluation. Additionally, samples with conflicting sequences are flagged if the secondary sequence is supported by at least 50% of the read count supporting the primary sequence or by 100 reads when the primary sequence is supported by more than 200 reads. These thresholds are designed to identify samples likely containing multiple insects, based on manual photo examination. They are not used to exclude any samples but to facilitate further analysis of conflicts.
+2.8. Next, information about secondary sequences that conflict with the primary sequence is saved to another separate file. Conflicts are defined as cases where primary and secondary sequences within a sample have different family or order classifications. Conflicts are saved for further evaluation. Additionally, samples with conflicting sequences are flagged if the secondary sequence is supported by at least 50% of the read count supporting the primary sequence or by 100 reads when the primary sequence is supported by more than 200 reads. These thresholds are designed to identify samples likely containing multiple insects, based on manual photo examination. They are not used to exclude any samples but to facilitate further analysis of conflicts.
 
 2.9. In the next step, all secondary sequences are removed, leaving only the primary arthropod sequences [or primary sequences with no taxonomy assigned] - the consensus sequences. The report then displays the number and percentage of retained samples. At this step, all retained samples get assigned a confidence category [Table 1].
 
@@ -207,5 +207,5 @@ The report displays the above table with the number of samples assigned to each 
 - Big heatmaps showing the number or sequenced reads per plate well.
 - Two similar heatmaps showing the read support for the consesnus sequence. The first heatmap displays all retained consensus sequences, the second heatmap shows only the samples in which the decision category indicates they will be retained for BOLD upload.
 - Histogram showing the sequence length distribution across the retained samples. 
-- Tables with percentages of retained samples per partner, partner plate, and UMI plate. 
+- Tables with percentages of retained samples per partner, partner plate, and UMI plate. These tables are also saved as .csv filed in the output directory. 
 - All partner plates and UMI plates displayed as heatmaps.
