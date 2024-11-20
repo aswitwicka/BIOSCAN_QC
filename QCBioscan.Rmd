@@ -596,10 +596,7 @@ unique_plates <- stats_table_comb_failed %>% arrange(partner_plate) %>% pull(par
 plot_list_counts <- list()
 heatmapPlate(unique_plates, stats_table_comb_failed, plot_list_counts)
 ```
-
-
 ### Assessment of sequence conflicts and contaminants
-
 
 <b>Positive control as contamination source</b>
 ```{r otu_data_handling}
@@ -1199,29 +1196,46 @@ qc_tsv_arthropod_primary <- qc_tsv_arthropod_primary %>% filter(p_primary == "Ar
 sample_metadata <- cbind(sample_metadata, data.frame(no_replaced_non_arthropods = length(unique(non_arth_primary_samples$pid))))
 # Remove anopheles
 anopheles_pids <- qc_tsv_arthropod_primary %>% filter(otu_primary == "BOLD:AAA3436") %>% pull(pid) %>% unique()
-anopheles_samples_all <- qc_tsv_arthropod_primary %>% filter(pid %in% anopheles_pids)
+# anopheles_samples_all <- qc_tsv_arthropod_primary %>% filter(pid %in% anopheles_pids)
+anopheles_samples_all <- qc_tsv_arthropod_primary %>% filter(otu_primary == "BOLD:AAA3436")
+# How many per plate / batch
+cat(paste("Total number of wells with Anopheles reads:", length(anopheles_pids)))
+anopheles_samples_all$plate <- paste(anopheles_samples_all$partner_plate, anopheles_samples_all$plate_number, sep = "_")
+ano_table <- anopheles_samples_all %>% dplyr::select(partner_plate, plate, assignment) %>%
+  group_by(plate, assignment) %>%
+  summarise(sample_number = n(), .groups = 'drop') 
+knitr::kable(ano_table %>% group_by(plate) %>% arrange(plate, assignment), 
+             col.names = c("Plate", "Sequence", "No. samples with Anopheles reads"), format = "html") %>%
+  kableExtra::kable_styling(full_width = FALSE, position = "center")
 # Remove all secondary anopheles 
+anopheles_samples_all <- qc_tsv_arthropod_primary %>% filter(pid %in% anopheles_pids)
 anopheles_samples_all <- anopheles_samples_all %>% filter(!(otu_primary == "BOLD:AAA3436" & assignment == "secondary"))
 # Filter only primary anopheles
 anopheles_samples_to_examine <- anopheles_samples_all %>% filter(otu_primary == "BOLD:AAA3436" & assignment == "primary")
-# Samples to remove 
-anopheles_samples_to_remove <- anopheles_samples_to_examine %>% filter(rep_count_primary >= 250) %>% pull(pid)
+# Samples to remove [anopheles with more than 199 reads]
+anopheles_samples_to_remove <- anopheles_samples_to_examine %>% filter(rep_count_primary >= 200) %>% pull(pid)
+anopheles_df_to_remove <- do.call(rbind, strsplit(anopheles_samples_to_remove, "_"))
+anopheles_df_to_remove <- as.data.frame(anopheles_df_to_remove, stringsAsFactors = FALSE)
+colnames(anopheles_df_to_remove) <- c("Partner", "Plate", "Sample")
+anopheles_df_to_remove <- anopheles_df_to_remove %>% dplyr::select(-Sample) %>%
+  group_by(Partner, Plate) %>%
+  summarise(Count = n(), .groups = 'drop')
+knitr::kable(anopheles_df_to_remove %>% arrange(-Count), col.names = c("Partner", "Plate", "No. Anopheles primary sequences with 200 + reads"), format = "html") %>%
+  kableExtra::kable_styling(full_width = FALSE, position = "center")
 samples_to_rewrite <- anopheles_samples_all %>% filter(!(pid %in% anopheles_samples_to_remove)) %>% 
+  filter(otu_primary != "BOLD:AAA3436") %>% 
   group_by(pid) %>% arrange(-rep_count_primary) %>% slice_head(n = 1)
 samples_to_rewrite$assignment <- "primary"
-
 qc_tsv_arthropod_primary <- qc_tsv_arthropod_primary %>% filter(!(pid %in% anopheles_pids))
 qc_tsv_arthropod_primary <- rbind(qc_tsv_arthropod_primary, samples_to_rewrite)
 qc_tsv_arthropod_primary <- qc_tsv_arthropod_primary %>% filter(otu_primary != "BOLD:AAA3436") 
-
-cat(paste("Number of African Anopheline samples:", length(anopheles_pids),
-          "\nNumber of primary African Anopheline hits [250 or more reads]:", length(anopheles_samples_to_remove),
+cat(paste(
+          "Number of primary African Anopheline hits [200 or more reads]:", length(anopheles_samples_to_remove),
           "\nNOTE: All primary mosquito samples removed!"))
 ```
 ```{r conflicting_arthropod_contig_assessment,fig.align='center', fig.width=2.5, fig.height=2}
 # Exclude everything that is less than 5 reads
 qc_tsv_arthropod_primary <- qc_tsv_arthropod_primary %>% filter(rep_count_primary >= 5)
-
 pid_counts <- qc_tsv_arthropod_primary %>%
   group_by(pid) %>%
   summarise(no_conflicting_sequences = n())
@@ -1435,8 +1449,8 @@ cat(paste("Number of samples with only primary Arthropod sequence:", length(uniq
 
 csv_file_path <- paste(output_path, "conflicts_", batch_no, ".csv", sep = "")
 write.csv(conflicting_arthropods_tax, file = csv_file_path, row.names = FALSE) 
-csv_file_path <- paste(output_path, "unique_secondary_sequeces_", batch_no, ".csv", sep = "")
-write.csv(otus_to_examine, file = csv_file_path, row.names = FALSE) 
+# csv_file_path <- paste(output_path, "unique_secondary_sequeces_", batch_no, ".csv", sep = "")
+# write.csv(otus_to_examine, file = csv_file_path, row.names = FALSE) 
 ```
 ```{r remove_secondary_contigs}
 # Remove secondary sequences
@@ -1444,11 +1458,11 @@ qc_tsv_arthropod_primary <- qc_tsv_arthropod_primary %>% filter(assignment == "p
 non_arth_summary <- table(qc_tsv_arthropod_primary %>% filter(assignment == "primary") %>% pull(p_primary))
 knitr::kable(non_arth_summary, col.names = c("Primary hit", "Number"), format = "html") %>%
   kableExtra::kable_styling(full_width = FALSE, position = "center")
-# Remove chimeras with low read support CHANGE THIS!!!!!!
+# Remove chimeras with low read support 
 # Get only 5 or check if it's been done 
 qc_tsv_arthropod_primary <- qc_tsv_arthropod_primary %>% filter(!(str_detect(otu_primary, "chimera") & rep_count_primary < 5))
 cat(paste("Number of retained samples:", length(unique(qc_tsv_arthropod_primary$pid)),
-          "\nNumber of Arthropod samples assigned by mBRAVE [this inscludes samples with 5 or less reads that have now been excluded!]:",
+          "\nNumber of Arthropod samples assigned by mBRAVE [this inscludes samples with fewer than 5 reads that have now been excluded!]:",
           (qc_AM %>% filter(!(str_detect(pid, "CONTROL"))) %>% filter(assignment == "primary") %>%  filter(p_primary == "Arthropoda") %>% 
              filter(!(str_detect(otu_primary, "chimera"))) %>% nrow()),
           "\nNumber of samples with replaced sequences:", length(unique(qc_tsv_arthropod_primary %>% filter(Contig_ID != 1) %>% pull(pid))),
@@ -1605,46 +1619,65 @@ cat(paste("Final fasta file succesfully saved:", fasta_file_path,
 
 <br><b>Number of retained samples per partner plate</b><br>
 ```{r retained_per_plate}
-retained_samples <- qc_tsv_arthropod_primary %>% filter(category_decision == "YES") %>% 
+retained_samples_all <- qc_tsv_arthropod_primary %>% 
   pull(Sample.Plate.ID) %>% table() %>% as.data.frame() %>% arrange(-Freq)
-colnames(retained_samples) <- c("Plate", "Number of samples after filtering")
+retained_samples_confident <- qc_tsv_arthropod_primary %>% filter(category_decision == "YES") %>% 
+  pull(Sample.Plate.ID) %>% table() %>% as.data.frame() %>% arrange(-Freq)
+retained_samples <- merge(retained_samples_all, retained_samples_confident, by = ".")
+colnames(retained_samples) <- c("Plate", "No. samples post-QC", "No. confident samples")
 all_sample_plates <- sample_stats %>% pull(Sample.Plate.ID) %>% table() %>% as.data.frame() %>% arrange(-Freq)
 colnames(all_sample_plates) <- c("Plate", "Original number of samples")
 retained_samples <- merge(all_sample_plates, retained_samples, by = "Plate") %>% 
-  arrange(-`Number of samples after filtering`) %>% 
-  mutate(Percentage = (`Number of samples after filtering`*100/`Original number of samples`)) %>%
-  arrange(-Percentage)
+  arrange(-`No. confident samples`) %>% 
+  mutate(`Percentage of confident samples` = (`No. confident samples`*100/`Original number of samples`)) %>%
+  arrange(-`Percentage of confident samples`)
 knitr::kable(retained_samples, format = "html") %>%
   kableExtra::kable_styling(full_width = FALSE, position = "center")
 ```
 <br><b>Number of retained samples per partner</b><br>
 ```{r retained_per_paertner}
-retained_partners <- qc_tsv_arthropod_primary %>% filter(category_decision == "YES") %>%
+retained_partners_all <- qc_tsv_arthropod_primary %>% 
   pull(partner_plate) %>% table() %>% as.data.frame() %>% arrange(-Freq)
-colnames(retained_partners) <- c("Partner", "Number of samples after filtering")
+confident_partners <- qc_tsv_arthropod_primary %>% filter(category_decision == "YES") %>%
+  pull(partner_plate) %>% table() %>% as.data.frame() %>% arrange(-Freq)
+retained_partners <- merge(retained_partners_all, confident_partners, by = ".")
+colnames(retained_partners) <- c("Partner", "No. samples post-QC", "No. confident samples")
 sample_stats <- sample_stats %>% mutate(partner_plate = str_extract(Label, "^[^_]+"))
 all_sample_parthers <- sample_stats %>% pull(partner_plate) %>% table() %>% as.data.frame() %>% arrange(-Freq)
 colnames(all_sample_parthers) <- c("Partner", "Original number of samples")
 retained_partners <- merge(all_sample_parthers, retained_partners, by = "Partner") %>% 
-  arrange(-`Number of samples after filtering`) %>% 
-  mutate(Percentage = (`Number of samples after filtering`*100/`Original number of samples`)) %>%
-  arrange(-Percentage)
+  arrange(-`No. confident samples`) %>% 
+  mutate(`Percentage of confident samples` = (`No. confident samples`*100/`Original number of samples`)) %>%
+  arrange(-`Percentage of confident samples`)
 knitr::kable(retained_partners, format = "html") %>%
   kableExtra::kable_styling(full_width = FALSE, position = "center")
 ```
 <br><b>Number of retained samples per UMI plate</b><br>
 ```{r retained_per_umi}
-retained_partners <- qc_tsv_arthropod_primary %>% filter(category_decision == "YES") %>% 
+retained_partners_all <- qc_tsv_arthropod_primary %>% 
   pull(UMI.Plate.ID) %>% table() %>% as.data.frame() %>% arrange(-Freq)
-colnames(retained_partners) <- c("Plate", "Number of samples after filtering")
+confident_partners <- qc_tsv_arthropod_primary %>% filter(category_decision == "YES") %>% 
+  pull(UMI.Plate.ID) %>% table() %>% as.data.frame() %>% arrange(-Freq)
+retained_umi <- merge(retained_partners_all, confident_partners, by = ".")
+colnames(retained_umi) <- c("Plate", "No. samples post-QC", "No. confident samples")
 all_sample_parthers <- sample_stats %>% pull(UMI.Plate.ID) %>% table() %>% as.data.frame() %>% arrange(-Freq)
 colnames(all_sample_parthers) <- c("Plate", "Original number of samples")
-retained_partners <- merge(all_sample_parthers, retained_partners, by = "Plate") %>% 
-  arrange(-`Number of samples after filtering`) %>% 
-  mutate(Percentage = (`Number of samples after filtering`*100/`Original number of samples`)) %>%
-  arrange(-Percentage)
-knitr::kable(retained_partners, format = "html") %>%
+retained_umi <- merge(all_sample_parthers, retained_umi, by = "Plate") %>% 
+  arrange(-`No. confident samples`) %>% 
+  mutate(`Percentage of confident samples` = (`No. confident samples`*100/`Original number of samples`)) %>%
+  arrange(-`Percentage of confident samples`)
+knitr::kable(retained_umi, format = "html") %>%
   kableExtra::kable_styling(full_width = FALSE, position = "center")
+
+# Save
+csv_file_path <- paste(output_path, "retained_sample_percentage_", batch_no, ".csv", sep = "")
+write.csv(retained_samples, file = csv_file_path, row.names = FALSE)
+#
+csv_file_path <- paste(output_path, "retained_partners_percentage_", batch_no, ".csv", sep = "")
+write.csv(retained_partners, file = csv_file_path, row.names = FALSE)
+#
+csv_file_path <- paste(output_path, "retained_umi_percentage_", batch_no, ".csv", sep = "")
+write.csv(retained_umi, file = csv_file_path, row.names = FALSE)
 ```
 <b>The plates with low number of reads and retained samples should be examined!</b>
 
