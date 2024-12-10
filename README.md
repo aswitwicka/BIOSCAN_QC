@@ -183,7 +183,7 @@ At this point, control samples are no longer included. No samples have been remo
 | <b>5</b> | 50 - 200| Dominant sequence with 50 to 200 reads, non-conflicting secondary sequences with 5 or fewer reads       |YES |
 | <b>6</b> | > 200   | Dominant sequence with more than 200 reads, conflicting secondary sequences with 5 or fewer reads       |YES |
 | <b>7</b> | 50 - 200| Dominant sequence with 50 to 200 reads, secondary sequences with 5 or fewer read            |YES |
-| <b>8</b> | > 49| Dominant sequence with 50 to 200 reads, non-conflicting secondary sequences with more than 5 reads [no more tham 2% sequence divergence between all sequences in a sample]|YES |
+| <b>8</b> | > 49| Dominant sequence with 50 or more reads, non-conflicting secondary sequences with more than 5 reads [no more tham 2% sequence divergence between all sequences in a sample]|YES |
 | <b>9</b> | > 200   | Dominant sequence with more than 200 reads, secondary sequences with more than 5 read support          |NO  |
 | <b>10</b> | 50 - 200| Dominant sequence with 50 to 200 reads, secondary sequences with more than 5 read support              |NO  |
 | <b>11</b>| 6 - 49  | Dominant sequence with 5 or more but fewer than 50 reads, non-conflicting secondary sequences with fewer than 5 reads |NO  |
