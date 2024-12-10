@@ -43,7 +43,7 @@ Rscript -e "rmarkdown::render(input = '/lustre/scratch126/tol/teams/lawniczak/us
 <b>Consensus sequence</b>: a single sequence per sample chosen through the QC process; usually the primary sequence, though sometimes a secondary sequence is selected.  <br><br>
 <b>Read count</b>: the number of reads supporting a sequence in a well  <br><br>
 <b>Similarity score</b>: a metric indicating how closely a sequence matches reference sequences in a database.  <br><br>
-<b>Confidence category</b>: a category assigned to each consensus sequence in samples that passed the QC process; categories 1-7 indicate passing QC, while categories 8-11 require further examination [Table 1]. <br><br>
+<b>Confidence category</b>: a category assigned to each consensus sequence in samples that passed the QC process; categories 1-8 indicate passing QC, while categories 9-12 require further examination [Table 1]. <br><br>
 <b></b>
 
 ## Input
@@ -67,10 +67,10 @@ Additionally, the script automatically loads a .csv file with UMI indices from t
 ## Output
 The script generates the following output files:
 - <i>QCBioscan.html</i><br>Main QC report with plots, tables, and statistics for the sequencing batch.
-- <i>filtered_metadata.csv</i><br>Metadata for samples that passed the QC with further details on each sample. Only one Arthropod sequence per sample is included. Two metadata files are generated: 1. Contains all samples that passed the QC and their confidence category [see Table 1]; 2. Contains only samples with confidence category from 1 to 7 [see Table 1]. Controls are not included. 
-- <i>filtered_sequences.fasta</i><br>Consensus sequences for all samples included in the metadata. Two versions are generates: 1. Contains all sequences for samples that passed the QC; 2. Contains only sequences for samples with confidence category from 1 to 7 [ready for BOLD upload].
+- <i>filtered_metadata.csv</i><br>Metadata for samples that passed the QC with further details on each sample. Only one Arthropod sequence per sample is included. Two metadata files are generated: 1. Contains all samples that passed the QC and their confidence category [see Table 1]; 2. Contains only samples with confidence category from 1 to 8 [see Table 1]. Controls are not included. 
+- <i>filtered_sequences.fasta</i><br>Consensus sequences for all samples included in the metadata. Two versions are generates: 1. Contains all sequences for samples that passed the QC; 2. Contains only sequences for samples with confidence category from 1 to 8 [ready for BOLD upload].
 - <i>read_summary_metadata.csv</i><br>Summary statistics for the sequencing batch including sample numbers, control statistics, and number of samples assigned to all confidence categories [see Table 1]. The tables can be combined across the batches to compare sequencing batches and to calculate statistics.
-- <i>retained_percentage.csv</i><br>Three tables showing number and percentage of samples retained after the QC process and after retaining only samples with confidence categories of 1-7 [see Table 1] per: 1. Partner plate; 2. UMI plate; 3. Partner. 
+- <i>retained_percentage.csv</i><br>Three tables showing number and percentage of samples retained after the QC process and after retaining only samples with confidence categories of 1-8 [see Table 1] per: 1. Partner plate; 2. UMI plate; 3. Partner. 
 - <i>conflicts.csv </i><br>Tables of conflicting secondary sequences detected across the samples. Secondary sequences with good read support [> 50 reads or 50% or more of the primary sequence read] that were assigned to a different taxon than the primary sequence at family or order level are flagged in these files for further secondary sequence analysis [parasites/symbionts]. These thresholds are not used to exclude any samples. Rather, they are used to detect candidate samples that may have two different arthropods in them or have biologically relevant signals of two arthropods interacting. 
 - <i>tardigrada_nematoda_rotifera_annelida.csv and wolbachia.csv</i><br>Non-Arthropod sequences and metadata retained for further exploration. These files are not filtered for number of reads nor contain quality categories. These should be processed further if required. 
 
@@ -161,7 +161,7 @@ At this point, control samples are no longer included. No samples have been remo
   <img src="./taxonomy_family_level2.png" alt="QC Repor"/>
 </p>
 <b>Figure 1. A.</b> Photo examination and identification to the family level indicate that family-level taxonomic identification by mBRAVE is more accurate for samples with higher read support. Specifically, when samples have only one read, the majority of specimens are assigned incorrect family-level taxonomy. In samples with five or more reads, the error rate was found to be ~10%. This error rate is significantly reduced when the read count reaches approximately 50 reads for the consensus sequence. These cut-offs [5 and 50 reads] were applied to sample quality scores to exclude samples with insufficient read support [fewer than 5 reads] and those with conflicting sequences [fewer than 50 reads].
-<b>B.</b> Breakdown of the number of samples from 23 sequencing batches categorized by read count. The majority of samples have over 200 reads supporting the consensus sequence. The likelihood of accurate taxonomy assignment does not change significantly across categories, except in cases where samples with more than 100 reads have fewer instances of no taxonomy assigned. It is crucial to note that the taxonomy assigned to samples by mBRAVE may still be incorrect, as shown in the first plot.
+<b>B.</b> Breakdown of the number of samples from 23 sequencing batches categorised by read count. The majority of samples have over 200 reads supporting the consensus sequence. The likelihood of accurate taxonomy assignment does not change significantly across categories, except in cases where samples with more than 100 reads have fewer instances of no taxonomy assigned. It is crucial to note that the taxonomy assigned to samples by mBRAVE may still be incorrect, as shown in the first plot.
 <br><br>
 <p align="center">
   <img src="./contaminant_level.png" alt="QC Repor"/>
@@ -182,11 +182,12 @@ At this point, control samples are no longer included. No samples have been remo
 | <b>4</b> | > 200   | Dominant sequence with more than 200 reads, non-conflicting secondary sequences with 5 or fewer reads   |YES |
 | <b>5</b> | 50 - 200| Dominant sequence with 50 to 200 reads, non-conflicting secondary sequences with 5 or fewer reads       |YES |
 | <b>6</b> | > 200   | Dominant sequence with more than 200 reads, conflicting secondary sequences with 5 or fewer reads       |YES |
-| <b>7</b> | 50 - 200| Dominant sequence with 50 to 200 reads, conflicting secondary sequences with 5 or fewer read            |YES |
-| <b>8</b> | > 200   | Dominant sequence with more than 200 reads, secondary sequences with more than 5 read support          |NO  |
-| <b>9</b> | 50 - 200| Dominant sequence with 50 to 200 reads, secondary sequences with more than 5 read support              |NO  |
-| <b>10</b>| 6 - 49  | Dominant sequence with 5 or more but fewer than 50 reads, non-conflicting secondary sequences with fewer than 5 reads |NO  |
-| <b>11</b>| 6 - 49  | Dominant sequence with more than 5 but fewer than 50 reads, any other secondary reads present<br>[conflicting or not]|NO  | 
+| <b>7</b> | 50 - 200| Dominant sequence with 50 to 200 reads, secondary sequences with 5 or fewer read            |YES |
+| <b>8</b> | > 49| Dominant sequence with 50 to 200 reads, non-conflicting secondary sequences with more than 5 reads [no more tham 2% sequence divergence between all sequences in a sample]|YES |
+| <b>9</b> | > 200   | Dominant sequence with more than 200 reads, secondary sequences with more than 5 read support          |NO  |
+| <b>10</b> | 50 - 200| Dominant sequence with 50 to 200 reads, secondary sequences with more than 5 read support              |NO  |
+| <b>11</b>| 6 - 49  | Dominant sequence with 5 or more but fewer than 50 reads, non-conflicting secondary sequences with fewer than 5 reads |NO  |
+| <b>12</b>| 6 - 49  | Dominant sequence with more than 5 but fewer than 50 reads, any other secondary reads present<br>[conflicting or not]|NO  | 
 
 <b>Table 1.</b> Post-QC confidence scores. <br>
 
@@ -195,7 +196,7 @@ The report displays the above table with the number of samples assigned to each 
 <p align="center">
   <img src="./qc-catogory-boxplot.png" alt="QC Repor"/>
 </p>
-<b>Figure 3.</b> Number of samples assigned to each of the quality scores within 20 sequencing batches. The majority of samples are of good quality and do not contain neither conflicting nor secondary sequences. Samples within categories 8 to 11 will be examined further. 
+<b>Figure 3.</b> Number of samples assigned to each of the quality scores within 20 sequencing batches. The majority of samples are of good quality and do not contain neither conflicting nor secondary sequences. Samples within categories 9 to 12 will be examined further. 
 <br><br>
 <p align="center">
   <img src="./taxonomy_bias.png" alt="QC Repor"/>
