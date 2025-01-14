@@ -1,7 +1,7 @@
 # BIOSCAN QC 
 ### Version 1.0 [November 2024]
 <br><br>
-This script generates a BIOSCAN QC report and filters one consensus sequence per sample using output files from mBRAVE. It is designed specifically for processing the Wellcome Sanger Institute BIOSCAN data. <br> <br> 
+This Rmarkdown script generates a BIOSCAN QC report and filters one consensus sequence per sample using output files from mBRAVE. It is designed specifically for processing the Wellcome Sanger Institute BIOSCAN data. <br> <br> 
 <p align="center">
   <img src="./2024Sep_QC2.png" alt="QC Repor"/>
 </p>
@@ -33,16 +33,16 @@ Rscript -e "rmarkdown::render(input = '/lustre/scratch126/tol/teams/lawniczak/us
 ## Glossary
 <b>Partner plate</b>: 96-well plate used by BIOSCAN partners, with each well containing a single insect for individual analysis.   <br><br>
 <b>UMI plate</b>: 384-well plate used for sample processing and PCR, with four partner plates transferred onto a single UMI plate.  <br><br>
-<b>Positive controls</b>: well G12 of each 96-well partner plate containing XXXX sequence.  <br><br>
-<b>Negative controls</b>: two negative control lypes are used in BIOSCAN. <b>Lysate controls:</b> well H12 and any wells left empty by the partners on partially empty plates; <b>Empty control:</b> one well per plate selected at random [insect automatically excluded].  <br><br>
+<b>Positive controls</b>: well G12 of each 96-well partner plate containing a synthetic sequence.  <br><br>
+<b>Negative controls</b>: two negative control types are used in BIOSCAN. <b>Lysate controls:</b> well H12 and any wells left empty by the partners on partially empty plates; <b>Empty control:</b> one well per plate selected at random [insect automatically excluded].  <br><br>
 <b>Sample</b>: each partner plate contains 93 samples - wells where insect specimens are plated and sequenced.  <br><br>
-<b>Sequencing batch</b>: a single sequencing run, typically containing XXX partner plates.  <br><br>
+<b>Sequencing batch</b>: a single sequencing run, typically containing 96 partner plates.  <br><br>
 <b>Primary sequence</b>: the sequence in a well with the highest read count and highest similarity score.   <br><br>
 <b>Secondary sequence</b>: any sequences detected in a well other than the primary sequence.  <br><br>
 <b>Conflicting sequence</b>: any secondary sequence that belongs to a different order or family than the primary sequence in the sample.  <br><br>
 <b>Consensus sequence</b>: a single sequence per sample chosen through the QC process; usually the primary sequence, though sometimes a secondary sequence is selected.  <br><br>
 <b>Read count</b>: the number of reads supporting a sequence in a well  <br><br>
-<b>Similarity score</b>: a metric indicating how closely a sequence matches reference sequences in a database.  <br><br>
+<b>Similarity score</b>: a metric indicating how closely a sequence matches reference sequences in the database.  <br><br>
 <b>Confidence category</b>: a category assigned to each consensus sequence in samples that passed the QC process; categories 1-8 indicate passing QC, while categories 9-12 require further examination [Table 1]. <br><br>
 <b></b>
 
@@ -61,13 +61,13 @@ The script requires the following files from mBRAVE:
 </li>
 </i>
 <br>
-The fasta file should contain all sequences, not just the consensus sequences. No filtering should be applied when downloading data from mBRAVE. The names of the downloaded files should not be altered and should contain batch numbers and identifiers. <br><br>
-Additionally, the script automatically loads a .csv file with UMI indices from the Farm directory. The directories are set automatically and should not be altered. <br>
+The fasta file should contain all sequences, not just the consensus sequences determined by mBRAVE. No filtering should be applied when downloading data from mBRAVE. The names of the downloaded files should not be altered and should contain batch numbers and identifiers. <br><br>
+Additionally, the script automatically loads a .csv file with UMI indices from the Farm directory. The directories are set automatically and should not be changed <br>
 
 ## Output
 The script generates the following output files:
 - <i>QCBioscan.html</i><br>Main QC report with plots, tables, and statistics for the sequencing batch.
-- <i>filtered_metadata.csv</i><br>Metadata for samples that passed the QC with further details on each sample. Only one Arthropod sequence per sample is included. Two metadata files are generated: 1. Contains all samples that passed the QC and their confidence category [see Table 1]; 2. Contains only samples with confidence category from 1 to 8 [see Table 1]. Controls are not included. 
+- <i>filtered_metadata.csv</i><br>Metadata for samples that passed the QC with further details on each sample. Only one Arthropod sequence per sample is included. Two metadata files are generated: 1. Contains all samples that passed the QC and their confidence category [see Table 1]; 2. Contains only samples with confidence category from 1 to 8 [see Table 1]. Controls are not included. If a sample is not present in either of the tables then the primary sequence was supported by fewer than 5 reads and got automatically excluded. 
 - <i>filtered_sequences.fasta</i><br>Consensus sequences for all samples included in the metadata. Two versions are generates: 1. Contains all sequences for samples that passed the QC; 2. Contains only sequences for samples with confidence category from 1 to 8 [ready for BOLD upload].
 - <i>read_summary_metadata.csv</i><br>Summary statistics for the sequencing batch including sample numbers, control statistics, and number of samples assigned to all confidence categories [see Table 1]. The tables can be combined across the batches to compare sequencing batches and to calculate statistics.
 - <i>retained_percentage.csv</i><br>Three tables showing number and percentage of samples retained after the QC process and after retaining only samples with confidence categories of 1-8 [see Table 1] per: 1. Partner plate; 2. UMI plate; 3. Partner. 
@@ -75,7 +75,7 @@ The script generates the following output files:
 - <i>tardigrada_nematoda_rotifera_annelida.csv and wolbachia.csv</i><br>Non-Arthropod sequences and metadata retained for further exploration. These files are not filtered for number of reads nor contain quality categories. These should be processed further if required. 
 
 ## Documentation
-The QC process is divided into parts:<br>
+The QC process is divided into three parts:<br>
 1. <i>Assessment of the sequencing batch</i><br>
 2. <i>Assessment of sequence conflicts and contaminants</i><br>
 3. <i>Final assessments and plots </i><br><br>
