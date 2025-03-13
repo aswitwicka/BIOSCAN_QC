@@ -174,7 +174,7 @@ At this point, control samples are no longer included. No samples have been remo
 
 2.9. In the next step, all secondary sequences are removed, leaving only the primary arthropod sequences [or primary sequences with no taxonomy assigned] - the consensus sequences. The report then displays the number and percentage of retained samples. At this step, all retained samples get assigned a confidence category [Table 1].
 
-| Category | No. reads in primary | Sample description [secondary sequence assessment]                               | Decision     |
+| Confidence category | No. reads in primary | Sample description [secondary sequence assessment]                               | Pass/Fail     |
 |-------|----------------------|--------------------------------------------------------------|-----------------------------------------|
 | <b>1</b> | > 200   | Only one sequence with more than 200 reads, no secondary sequence detected                             |YES |
 | <b>2</b> | 50 - 200| Only one sequence with 50 to 200 reads, no secondary sequence detected                                 |YES |
