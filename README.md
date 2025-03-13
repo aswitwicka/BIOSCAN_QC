@@ -39,7 +39,7 @@ Rscript -e "rmarkdown::render(input = '/lustre/scratch126/tol/teams/lawniczak/us
 <b>Sequencing batch</b>: a single sequencing run, typically containing 96 partner plates.  <br><br>
 <b>Primary sequence</b>: the sequence in a well with the highest read count and highest similarity score.   <br><br>
 <b>Secondary sequence</b>: any sequences detected in a well other than the primary sequence.  <br><br>
-<b>Conflicting sequence</b>: any secondary sequence that belongs to a different order or family than the primary sequence in the sample.  <br><br>
+<b>Conflicting sequence</b>: any secondary sequence that belongs to a taxonomically different group thant the consensus sequence [more than 2% sequence divergence].  <br><br>
 <b>Consensus sequence</b>: a single sequence per sample chosen through the QC process; usually the primary sequence, though sometimes a secondary sequence is selected.  <br><br>
 <b>Read count</b>: the number of reads supporting a sequence in a well  <br><br>
 <b>Similarity score</b>: a metric indicating how closely a sequence matches reference sequences in the database.  <br><br>
@@ -174,20 +174,20 @@ At this point, control samples are no longer included. No samples have been remo
 
 2.9. In the next step, all secondary sequences are removed, leaving only the primary arthropod sequences [or primary sequences with no taxonomy assigned] - the consensus sequences. The report then displays the number and percentage of retained samples. At this step, all retained samples get assigned a confidence category [Table 1].
 
-| Confidence category | No. reads in consensus | Sequance description                           | Pass/Fail     |
+| Confidence category | No. consensus seq. reads | Sequance description                           | Pass/Fail     |
 |-------|----------------------|--------------------------------------------------------------|-----------------------------------------|
-| <b>1</b> | > 200   | Only one sequence with more than 200 reads, no secondary sequence detected                             |YES |
-| <b>2</b> | 50 - 200| Only one sequence with 50 to 200 reads, no secondary sequence detected                                 |YES |
-| <b>3</b> | 5 - 49  | Only one sequence with 5 or more but fewer than 50 reads, no secondary sequence detected                |YES |
-| <b>4</b> | > 200   | Consensus sequence with more than 200 reads, non-conflicting secondary sequences with 5 or fewer reads   |YES |
-| <b>5</b> | 50 - 200| Consensus sequence with 50 to 200 reads, non-conflicting secondary sequences with 5 or fewer reads       |YES |
-| <b>6</b> | > 200   | Consensus sequence with more than 200 reads, conflicting secondary sequences with 5 or fewer reads       |YES |
-| <b>7</b> | 50 - 200| Consensus sequence with 50 to 200 reads, secondary sequences with 5 or fewer read            |YES |
-| <b>8</b> | > 49| Consensus sequence with 50 or more reads, non-conflicting secondary sequences with more than 5 reads [no more tham 2% sequence divergence between all sequences in a sample]|YES |
-| <b>9</b> | > 200   | Consensus sequence with more than 200 reads, secondary sequences with more than 5 read support          |NO  |
-| <b>10</b> | 50 - 200| Consensus sequence with 50 to 200 reads, secondary sequences with more than 5 read support              |NO  |
-| <b>11</b>| 5 - 49  | Consensus sequence with 5 or more but fewer than 50 reads, non-conflicting secondary sequences with fewer than 5 reads |NO  |
-| <b>12</b>| 5 - 49  | Consensus sequence with more than 5 but fewer than 50 reads, any other secondary reads present<br>[conflicting or not]|NO  | 
+| <b>1</b> | > 200   | Only consensus sequence with more than 200 reads, no secondary sequence detected                             |PASS |
+| <b>2</b> | 50 - 200| Only consensus sequence with 50 to 200 reads, no secondary sequence detected                                 |PASS |
+| <b>3</b> | 5 - 49  | Only consensus sequence with 5 or more but fewer than 50 reads, no secondary sequence detected                |PASS |
+| <b>4</b> | > 200   | Consensus sequence with more than 200 reads, non-conflicting secondary sequences with 5 or fewer reads   |PASS |
+| <b>5</b> | 50 - 200| Consensus sequence with 50 to 200 reads, non-conflicting secondary sequences with 5 or fewer reads       |PASS |
+| <b>6</b> | > 200   | Consensus sequence with more than 200 reads, conflicting secondary sequences with 5 or fewer reads       |PASS |
+| <b>7</b> | 50 - 200| Consensus sequence with 50 to 200 reads, conflicting secondary sequences with 5 or fewer read            |PASS |
+| <b>8</b> | > 49| Consensus sequence with 50 or more reads, non-conflicting secondary sequences with more than 5 reads [no more tham 2% sequence divergence between all sequences in a sample]|PASS |
+| <b>9</b> | > 200   | Consensus sequence with more than 200 reads, secondary sequences with more than 5 read support          |FAIL  |
+| <b>10</b> | 50 - 200| Consensus sequence with 50 to 200 reads, secondary sequences with more than 5 read support              |FAIL  |
+| <b>11</b>| 5 - 49  | Consensus sequence with 5 or more but fewer than 50 reads, non-conflicting secondary sequences with fewer than 5 reads |FAIL  |
+| <b>12</b>| 5 - 49  | Consensus sequence with more than 5 but fewer than 50 reads, any other secondary reads present<br>[conflicting or not]|FAIL  | 
 
 <b>Table 1.</b> Post-QC confidence scores. <br>
 
