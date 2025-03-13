@@ -179,15 +179,15 @@ At this point, control samples are no longer included. No samples have been remo
 | <b>1</b> | > 200   | Only one sequence with more than 200 reads, no secondary sequence detected                             |YES |
 | <b>2</b> | 50 - 200| Only one sequence with 50 to 200 reads, no secondary sequence detected                                 |YES |
 | <b>3</b> | 5 - 49  | Only one sequence with 5 or more but fewer than 50 reads, no secondary sequence detected                |YES |
-| <b>4</b> | > 200   | Dominant sequence with more than 200 reads, non-conflicting secondary sequences with 5 or fewer reads   |YES |
-| <b>5</b> | 50 - 200| Dominant sequence with 50 to 200 reads, non-conflicting secondary sequences with 5 or fewer reads       |YES |
-| <b>6</b> | > 200   | Dominant sequence with more than 200 reads, conflicting secondary sequences with 5 or fewer reads       |YES |
-| <b>7</b> | 50 - 200| Dominant sequence with 50 to 200 reads, secondary sequences with 5 or fewer read            |YES |
-| <b>8</b> | > 49| Dominant sequence with 50 or more reads, non-conflicting secondary sequences with more than 5 reads [no more tham 2% sequence divergence between all sequences in a sample]|YES |
-| <b>9</b> | > 200   | Dominant sequence with more than 200 reads, secondary sequences with more than 5 read support          |NO  |
-| <b>10</b> | 50 - 200| Dominant sequence with 50 to 200 reads, secondary sequences with more than 5 read support              |NO  |
-| <b>11</b>| 5 - 49  | Dominant sequence with 5 or more but fewer than 50 reads, non-conflicting secondary sequences with fewer than 5 reads |NO  |
-| <b>12</b>| 5 - 49  | Dominant sequence with more than 5 but fewer than 50 reads, any other secondary reads present<br>[conflicting or not]|NO  | 
+| <b>4</b> | > 200   | Consensus sequence with more than 200 reads, non-conflicting secondary sequences with 5 or fewer reads   |YES |
+| <b>5</b> | 50 - 200| Consensus sequence with 50 to 200 reads, non-conflicting secondary sequences with 5 or fewer reads       |YES |
+| <b>6</b> | > 200   | Consensus sequence with more than 200 reads, conflicting secondary sequences with 5 or fewer reads       |YES |
+| <b>7</b> | 50 - 200| Consensus sequence with 50 to 200 reads, secondary sequences with 5 or fewer read            |YES |
+| <b>8</b> | > 49| Consensus sequence with 50 or more reads, non-conflicting secondary sequences with more than 5 reads [no more tham 2% sequence divergence between all sequences in a sample]|YES |
+| <b>9</b> | > 200   | Consensus sequence with more than 200 reads, secondary sequences with more than 5 read support          |NO  |
+| <b>10</b> | 50 - 200| Consensus sequence with 50 to 200 reads, secondary sequences with more than 5 read support              |NO  |
+| <b>11</b>| 5 - 49  | Consensus sequence with 5 or more but fewer than 50 reads, non-conflicting secondary sequences with fewer than 5 reads |NO  |
+| <b>12</b>| 5 - 49  | Consensus sequence with more than 5 but fewer than 50 reads, any other secondary reads present<br>[conflicting or not]|NO  | 
 
 <b>Table 1.</b> Post-QC confidence scores. <br>
 
