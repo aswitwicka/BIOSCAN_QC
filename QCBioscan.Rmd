@@ -3,11 +3,11 @@ title: "BIOSCAN QC Report"
 author: "Alicja Witwicka"
 date: '`r Sys.Date()`'
 output:
-  html_document: 
-    toc: true
   pdf_document: 
     fig_caption: yes
     toc: yes
+  html_document: 
+    toc: true
   github_document:
     toc: yes
 editor_options:  
@@ -28,7 +28,7 @@ knitr::opts_chunk$set(
 )
 ```
 ```{bash, eval=TRUE}
-# Write environment variables to a temporary file
+# Write environment variables [batch_path/output_path/batch_no] to a temporary file 
 echo "batch_path=$batch_path" > /tmp/env_vars.txt
 echo "output_path=$output_path" >> /tmp/env_vars.txt
 echo "batch_no=$batch_no" >> /tmp/env_vars.txt
@@ -44,10 +44,10 @@ batch_path <- env_list$batch_path
 output_path <- env_list$output_path
 batch_no <- env_list$batch_no
 
-# For manual processing:
-# batch_no <- "batch19"
-# batch_path <- ("/lustre/scratch126/tol/teams/lawniczak/users/aw43/2024_07_bioscan_qc/input/mbrave_batch_data/batch19/")
-# output_path <- ("/lustre/scratch126/tol/teams/lawniczak/users/aw43/2024_07_bioscan_qc/output/qc_reports/batch19/")
+# For quick manual processing:
+# batch_no <- "batch_30"
+# batch_path <- ("/lustre/scratch126/tol/teams/lawniczak/users/aw43/bioscan_processing/mbrave_batch_data/batch_30/")
+# output_path <- ("/lustre/scratch126/tol/teams/lawniczak/users/aw43/bioscan_processing/mbrave_batch_data/batch_30/")
 ```
 ```{r load_libraries}
 # Load required libraries; All libraries should be automatically installed in the environment
@@ -70,8 +70,6 @@ bioconductor_pkgs <- c(
 load_pkgs(cran_pkgs, bioconductor = FALSE)
 # Load Bioconductor packages
 load_pkgs(bioconductor_pkgs, bioconductor = TRUE)
-
-# pander::panderOptions('digits' , 2)
 ```
 ```{r ggplot_theme_setup}
 # Set a custom ggplot theme - generate 97 pastel colors (for box plots)
@@ -90,7 +88,6 @@ p_cont_file <- list.files(pattern = "*control_pos_stats.txt", path = batch_path)
 # Load files
 qc_tsv_raw <- read.table(paste(batch_path, network_tsv, sep = ""), sep="\t", header = TRUE)
 sequences_all <- readDNAStringSet(paste(batch_path, full_fasta, sep = ""))
-
 stats_upload <- function(patch, sample){
   sample_table <- read.table(paste(patch, sample, sep = ""), sep="\t", header = TRUE, fill = TRUE) %>% 
   dplyr::select(Label, Count, Reads.Excised.from.Subsampling, Reads.in.Contigs, Contigs.Produced, Median.Read.Count.in.Contigs,
@@ -101,7 +98,8 @@ sample_stats <- stats_upload(patch = batch_path, sample = sample_file)
 n_cont_stats <- stats_upload(patch = batch_path, sample = n_cont_file)
 p_cont_stats <- stats_upload(patch = batch_path, sample = p_cont_file)
 
-umi_plates <- read.csv("/lustre/scratch126/tol/teams/lawniczak/users/aw43/2024_07_bioscan_qc/input/UMI_plates.csv")
+# Upload UMI plate index info
+umi_plates <- read.csv("/lustre/scratch126/tol/teams/lawniczak/users/aw43/bioscan_processing/required_files/UMI_plates.csv")
 ```
 ```{r check_files}
 cat(paste(batch_no, "\nQC REPORT",
@@ -122,7 +120,6 @@ plates_p_cont <- all(unique_sample_ids %in% unique_p_cont_ids)
 no_p_cont <- setdiff(unique_sample_ids, unique_p_cont_ids)
 p_cont_quantiles <- quantile(p_cont_stats$Count, 
                              probs = c(0.05, 0.1, 0.25, 0.50, 0.75, 0.95, 1))
-
 cat(
   paste(
     "Total number of positive controls:", (p_cont_stats %>% pull(Label) %>% unique() %>% length()),
@@ -147,14 +144,13 @@ sample_metadata <- data.frame(max_read_pcont = max(p_cont_stats$Count),
                               average_pcont = mean(p_cont_stats$Count),
                               median_pcont = median(p_cont_stats$Count),
                               sd_pcont = sd(p_cont_stats$Count))
-
 ```
 ```{r positive_control_histogram, fig.align='center', fig.width=2.5, fig.height=2}
 # Positive control read distribution
 p_cont_stats %>% 
   ggplot(aes(x = Count)) +
   geom_histogram(binwidth = 10, fill = "#07dbd0", color = "#1c67fc", linewidth = 0.5) +
-  labs(title = "Distribution of reads in positive controls [binwidth = 10]", x = "Read count", y = "Frequency") +
+  labs(title = "Distribution of reads in positive controls\n[binwidth = 10]", x = "Read count", y = "Frequency") +
   theme_classic() +
   geom_vline(aes(xintercept = mean(Count)), color = "#1c67fc", linetype = "solid", linewidth = 0.5) + 
   geom_vline(aes(xintercept = p_cont_quantiles[1]), color = "#db5f07", linetype = "dotted", linewidth = 0.5) +
@@ -251,21 +247,20 @@ sample_metadata_n <- data.frame(max_read_n_lysate = max(lysate_n_cont$Count),
 sample_metadata <- cbind(sample_metadata, sample_metadata_n)
 ```
 ```{r negative_control_histogram, fig.align='center', fig.width=3.5, fig.height=5}
-# Scalling for y axis
+# Small y axis values given more space 
 stretch_trans <- scales::trans_new(
   "stretch", 
   transform = function(x) x^0.5, 
   inverse = function(x) x^2       
 )
-# Calculate maximum y
 basic_plot <- n_cont_stats %>%
   ggplot(aes(x = Count)) +
   geom_histogram(binwidth = 1, fill = "#07dbd0", color = "#1c67fc", linewidth = 0.5)
-# Extract maximum count from the plot object
+# Extract maximum count from the plot
 max_count <- max(ggplot_build(basic_plot)$data[[1]]$count)
 # Plot negative control distribution
 n_cont_plot <- basic_plot +
-  labs(title = "Distribution of reads in all negative controls [binwidth = 1]", x = "Read count", y = "Frequency") +
+  labs(title = "Distribution of reads in all negative controls\n[binwidth = 1]", x = "Read count", y = "Frequency") +
   theme_classic() +
   geom_vline(aes(xintercept = mean(Count)), color = "#1c67fc", linetype = "solid", linewidth = 0.5) + 
   geom_vline(aes(xintercept = n_cont_quantiles[6]), color = "#db5f07", linetype = "dotted", linewidth = 0.5) +
@@ -356,7 +351,6 @@ sample_metadata_s <- data.frame(sample_number = total_sample_number,
                                 average_s = mean(sample_stats$Count),
                                 median_s = median(sample_stats$Count),
                                 sd_s = sd(sample_stats$Count)
-  
 )
 sample_metadata <- cbind(sample_metadata_s, sample_metadata)
 ```
@@ -365,7 +359,7 @@ sample_metadata <- cbind(sample_metadata_s, sample_metadata)
 sample_stats %>% 
   ggplot(aes(x = Count)) +
   geom_histogram(binwidth = 10, fill = "#07dbd0", color = "#1c67fc", linewidth = 0.5) +
-  labs(title = "Distribution of reads in samples [binwidth = 10]", x = "Read count", y = "Frequency") +
+  labs(title = "Distribution of reads in samples\n[binwidth = 10]", x = "Read count", y = "Frequency") +
   theme_classic() +
   geom_vline(aes(xintercept = mean(Count)), color = "#1c67fc", linetype = "solid", linewidth = 0.5) + 
   geom_vline(aes(xintercept = sample_quantiles[1]), color = "#db5f07", linetype = "dotted", linewidth = 0.5) +
@@ -393,10 +387,9 @@ cat(
 knitr::kable((failed_sample_table %>% arrange(-Freq)), col.names = c("Partner names", "Frequency"), format = "html") %>%
   kableExtra::kable_styling(full_width = FALSE, position = "center")
 
-# Samples with 0 reads are eliminated
 failed_samples_quantile <- sample_stats %>% filter(Count <= sample_quantiles[1]) %>% pull(Label)
 failed_samples_read <- sample_stats %>% filter(Count == 0) %>% pull(Label)
-cat(paste("\nNumber of samples with 0 reads:", length(failed_samples_read)))
+cat(paste("\nNumber of samples with 0 reads (will be removed):", length(failed_samples_read)))
 failed_samples <- failed_samples_read
 # Save
 sample_metadata <- cbind(sample_metadata, data.frame(zero_read_samples = length(failed_samples)))
@@ -450,14 +443,16 @@ stats_table_comb %>% filter(sample_type != "n_cont") %>%
     axis.title = element_text(size = 8),
     axis.text = element_text(size = 6)
   )
-cat(paste("Plates where the 75th percentile of the data is lower than expected mean read count (dark grey):\n\n", paste(low_read_plates, collapse = "\n"),"\n"),
-    paste("\nwhich constitutes", length(low_read_plates)*100/length(sample_stats %>% pull(Sample.Plate.ID) %>% unique()), "% of all partner plates in this batch"))
 ```
 Grey line: median <br>
 Brown line: mean <br> 
 Green data points: positive controls <br> 
 Blue data points: empty negative controls <br>
 Navy data points: lysate negative controls <br><br>
+```{r boxplot_summary}
+cat(paste("Plates where the 75th percentile of the data is lower than expected mean read count (dark grey):\n\n", paste(low_read_plates, collapse = "\n"),"\n"),
+    paste("\nwhich constitutes", length(low_read_plates)*100/length(sample_stats %>% pull(Sample.Plate.ID) %>% unique()), "% of all partner plates in this batch"))
+```
 ```{r umi_plate_assessment, fig.align='center', fig.width=12, fig.height=5.5}
 # Select low-quality UMI plates
 low_read_UMI <- sample_stats %>% 
@@ -493,7 +488,7 @@ sample_stats %>%
   )
 cat(
   paste("Plates where the 75th percentile of the data is lower than expected mean read count (dark grey):", paste(low_read_UMI, collapse = ", ")),
-  paste("\nHow many samples from the low-performance partner plates are present in the low-performance UMI plates (purple data points):", 
+  paste("\n\nHow many samples from the low-performance partner plates are present in the low-performance UMI plates (purple data points):", 
             (((sample_stats %>% filter(Sample.Plate.ID %in% low_read_plates)) %>% filter(UMI.Plate.ID %in% low_read_UMI)) %>% 
                pull(Label) %>% length())*100/(sample_stats %>% filter(Sample.Plate.ID %in% low_read_plates) %>% pull(Label) %>% length()), "%"))
 ```
@@ -521,22 +516,22 @@ for (i in 1:nrow(cont_count)) {
     cat(paste(sample_plate_id, "Positive control failed.\n", "Observed number of reads:", observed, "Expected:", expected, "\n\n"))
   }
 }
-# Loop through plates to detect plates with low read count AND low p_cont reads
-any_true <- FALSE
-failed_plates <- vector()
-for (plate in 1:nrow(obs_p_cont_count)) {
-  if (obs_p_cont_count$Sample.Plate.ID[plate] %in% low_read_plates) {
-    # If the condition is TRUE, print the Sample.Plate.ID and update the flag
-    cat(obs_p_cont_count$Sample.Plate.ID[plate], "\n")
-    any_true <- TRUE
-    failed_plates[plate] <- obs_p_cont_count$Sample.Plate.ID[plate]
-  }
-}
-if (any_true) {
-  cat("The above plates have lower than expected number of reads \nAND failed positive controls. \nTHESE PLATES NEED TO BE EXAMINED FURTHER")
-} else {
-  cat("This batch does not contain plates that have lower than expected number of reads in samples\nAND positive controls.")
-}
+# # Loop through plates to detect plates with low read count AND low p_cont reads
+# any_true <- FALSE
+# failed_plates <- vector()
+# for (plate in 1:nrow(obs_p_cont_count)) {
+#   if (obs_p_cont_count$Sample.Plate.ID[plate] %in% low_read_plates) {
+#     # If the condition is TRUE, print the Sample.Plate.ID and update the flag
+#     cat(obs_p_cont_count$Sample.Plate.ID[plate], "\n")
+#     any_true <- TRUE
+#     failed_plates[plate] <- obs_p_cont_count$Sample.Plate.ID[plate]
+#   }
+# }
+# if (any_true) {
+#   cat("The above plates have lower than expected number of reads \nAND failed positive controls. \nTHESE PLATES NEED TO BE EXAMINED FURTHER")
+# } else {
+#   cat("This batch does not contain plates that have lower than expected number of reads in samples\nAND positive controls.")
+# }
 ```
 <b> Low-quality plates are displayed here. All the other plates are plotted in the last part of this report. </b> <br>
 Green squares: controls [any kind]<br><br>
@@ -752,7 +747,7 @@ Green squares: samples with positive control contamination<br><br>
 qc_secondary %>% 
   ggplot(aes(x = rep_count_primary)) +
   geom_histogram(binwidth = 1, fill = "#07dbd0", color = "#1c67fc", linewidth = 0.5) +
-  labs(title = "Number of reads [secondary sequences; binwidth = 1]", x = "Read count", y = "Frequency") +
+  labs(title = "Number of reads\n[secondary sequences;\nbinwidth = 1]", x = "Read count", y = "Frequency") +
   theme_classic() +
   geom_vline(aes(xintercept = mean(rep_count_primary)), color = "#1c67fc", linetype = "solid", linewidth = 0.5) + 
   geom_vline(aes(xintercept = mean(p_cont_contamination$rep_count_primary)), color = "#db5f07", linetype = "dotted", linewidth = 0.5) +
@@ -761,17 +756,18 @@ qc_secondary %>%
     axis.title = element_text(size = 7),
     axis.text = element_text(size = 6)
   )
+```
+Blue solid line: secondary hit read mean <br>
+Orange dotted lines: mean of reads found as secondary contaminants from the positive controls in other samples <br>
+<b>Both lines should be in close proximity meaning that the secondary contamination from positive controls is comparable to the potential contamination in other samples.</b> <br>
+```{r holder}
 cat(paste(
   "Read count mean of all secondary sequences in all samples:", mean(qc_secondary$rep_count_primary),
   "\nRead count mean of all positive control sequences in other samples:", mean(p_cont_contamination$rep_count_primary),
   "\n\nRead count median of all secondary sequences in all samples:", median(qc_secondary$rep_count_primary),
   "\nRead count median of all positive control sequences in other samples:", median(p_cont_contamination$rep_count_primary)
   ))
-cat(paste())
 ```
-Blue solid line: secondary hit read mean <br>
-Orange dotted lines: mean of reads found as secondary contaminants from the positive controls in other samples <br>
-<b>Both lines should be in close proximity meaning that the secondary contamination from positive controls is comparable to the potential contamination in other samples.</b> <br>
 ```{r primary_control_contig_replacement_or_removal}
 p_cont_contamination_primary <- p_cont_contamination %>% filter(assignment == "primary") %>% pull(pid)
 p_cont_contamination_primary_df <- qc_AM %>% filter(pid %in% p_cont_contamination_primary)
@@ -816,7 +812,7 @@ max_count <- max(ggplot_build(basic_plot)$data[[1]]$count)
 primary_ncont_hist <- n_cont_samples_qc_AM %>% filter(assignment == "primary") %>%
   ggplot(aes(x = rep_count_primary)) +
   geom_histogram(binwidth = 1, fill = "#07dbd0", color = "#1c67fc", linewidth = 0.5) +
-  labs(title = "Primary [binwidth = 1]", x = "Read count", y = "Frequency") +
+  labs(title = "Primary\n[binwidth = 1]", x = "Read count", y = "Frequency") +
   theme_classic() +
   geom_vline(aes(xintercept = mean(rep_count_primary)), color = "#1c67fc", linetype = "solid", linewidth = 0.5) +
   scale_y_continuous(limits = c(0, max_count + 10), trans = stretch_trans) +
@@ -829,7 +825,7 @@ primary_ncont_hist <- n_cont_samples_qc_AM %>% filter(assignment == "primary") %
 secondary_ncont_hist <- n_cont_samples_qc_AM %>% filter(assignment == "secondary") %>%
   ggplot(aes(x = rep_count_primary)) +
   geom_histogram(binwidth = 1, fill = "#07dbd0", color = "#1c67fc", linewidth = 0.5) +
-  labs(title = "Secondary [binwidth = 1]", x = "Read count", y = "Frequency") +
+  labs(title = "Secondary\n[binwidth = 1]", x = "Read count", y = "Frequency") +
   theme_classic() +
   geom_vline(aes(xintercept = mean(rep_count_primary)), color = "#1c67fc", linetype = "solid", linewidth = 0.5) +
   scale_y_continuous(limits = c(0, max_count + 10), trans = stretch_trans) +
@@ -1061,7 +1057,7 @@ no_tax_samples <- qc_tsv_no_cont %>% filter(pid %in% no_tax_samples)
 ```{r sequence_length_histogram, fig.align='center', fig.width=4.8, fig.height=2}
 all_length_plot <- ggplot(qc_tsv_no_cont, aes(x = seq_length)) +
   geom_histogram(binwidth = 10, fill = "#07dbd0", color = "#1c67fc", linewidth = 0.5) +
-  labs(title = "All sequences [binwidth = 10]", x = "Sequence Length", y = "Frequency") +
+  labs(title = "All sequences\n[binwidth = 10]", x = "Sequence Length", y = "Frequency") +
   theme_classic() +
   theme(
     plot.title = element_text(size = 7), 
@@ -1070,7 +1066,7 @@ all_length_plot <- ggplot(qc_tsv_no_cont, aes(x = seq_length)) +
   )
 notax_length_plot <- ggplot(qc_tsv_no_cont %>% filter(pid %in% no_tax_samples$pid & Contig_ID == 1), aes(x = seq_length)) +
   geom_histogram(binwidth = 10, fill = "#07dbd0", color = "#1c67fc", linewidth = 0.5) +
-  labs(title = "No-taxonomy sequences", x = "Sequence Length", y = "Frequency") +
+  labs(title = "No-taxonomy\nsequences", x = "Sequence Length", y = "Frequency") +
   theme_classic() +
   theme(
     plot.title = element_text(size = 7), 
@@ -1167,7 +1163,6 @@ qc_tsv_stuff <- qc_tsv_no_cont %>% filter(p_primary == "Nematoda" | p_primary ==
 cat(paste("Number of samples with Nematoda, Tardigrada, Annelida, and/or Rotifera detected:", nrow(qc_tsv_stuff), "\n\nTable with plate positions, number of reads, and sequences saved to the output directory:\n", output_path))
 csv_file_path <- paste(output_path, "tar_nem_rot_ann_", batch_no, ".csv", sep = "")
 write.csv(qc_tsv_stuff, file = csv_file_path, row.names = FALSE)
-
 # Select samples that are not Arthropods but do have taxonomy assigned to them
 non_arth_primary_samples <- qc_tsv_no_cont %>% filter(assignment == "primary") %>% filter(p_primary != "Arthropoda" & p_primary != "None") # %>% pull(pid)
 non_arth_summary <- table(non_arth_primary_samples$p_primary)
@@ -1194,10 +1189,16 @@ for(i in seq_len(nrow(qc_tsv_no_arth_prim))) {
 qc_tsv_arthropod_primary <- qc_tsv_arthropod_primary %>% filter(p_primary == "Arthropoda" | p_primary == "None")
 # Add to metadata
 sample_metadata <- cbind(sample_metadata, data.frame(no_replaced_non_arthropods = length(unique(non_arth_primary_samples$pid))))
+```
+```{r anopheles_removal}
 # Remove anopheles
 anopheles_pids <- qc_tsv_arthropod_primary %>% filter(otu_primary == "BOLD:AAA3436") %>% pull(pid) %>% unique()
+anopheles_pids <- unique(c(anopheles_pids, (qc_tsv_arthropod_primary %>% filter(g_primary == "Anopheles") %>% pull(pid))))
+
+# GET THE SEQUENCES AND SCREEN FOR SIMILAR ONES - EXCLUDE THEM!
+
 # anopheles_samples_all <- qc_tsv_arthropod_primary %>% filter(pid %in% anopheles_pids)
-anopheles_samples_all <- qc_tsv_arthropod_primary %>% filter(otu_primary == "BOLD:AAA3436")
+anopheles_samples_all <- qc_tsv_arthropod_primary %>% filter(otu_primary == "BOLD:AAA3436" | g_primary == "Anopheles")
 # How many per plate / batch
 cat(paste("Total number of wells with Anopheles reads:", length(anopheles_pids)))
 anopheles_samples_all$plate <- paste(anopheles_samples_all$partner_plate, anopheles_samples_all$plate_number, sep = "_")
@@ -1216,12 +1217,14 @@ anopheles_samples_to_examine <- anopheles_samples_all %>% filter(otu_primary == 
 anopheles_samples_to_remove <- anopheles_samples_to_examine %>% filter(rep_count_primary >= 200) %>% pull(pid)
 anopheles_df_to_remove <- do.call(rbind, strsplit(anopheles_samples_to_remove, "_"))
 anopheles_df_to_remove <- as.data.frame(anopheles_df_to_remove, stringsAsFactors = FALSE)
-colnames(anopheles_df_to_remove) <- c("Partner", "Plate", "Sample")
-anopheles_df_to_remove <- anopheles_df_to_remove %>% dplyr::select(-Sample) %>%
+if (ncol(anopheles_df_to_remove) != 0) {
+  colnames(anopheles_df_to_remove) <- c("Partner", "Plate", "Sample")
+  anopheles_df_to_remove <- anopheles_df_to_remove %>% dplyr::select(-Sample) %>%
   group_by(Partner, Plate) %>%
   summarise(Count = n(), .groups = 'drop')
 knitr::kable(anopheles_df_to_remove %>% arrange(-Count), col.names = c("Partner", "Plate", "No. Anopheles primary sequences with 200 + reads"), format = "html") %>%
   kableExtra::kable_styling(full_width = FALSE, position = "center")
+}
 samples_to_rewrite <- anopheles_samples_all %>% filter(!(pid %in% anopheles_samples_to_remove)) %>% 
   filter(otu_primary != "BOLD:AAA3436") %>% 
   group_by(pid) %>% arrange(-rep_count_primary) %>% slice_head(n = 1)
@@ -1454,6 +1457,10 @@ write.csv(conflicting_arthropods_tax, file = csv_file_path, row.names = FALSE)
 ```
 ```{r remove_secondary_contigs}
 # Remove secondary sequences
+csv_file_path <- paste(output_path, "all_arthropod_sequences_", batch_no, ".csv", sep = "")
+write.csv(qc_tsv_arthropod_primary, file = csv_file_path, row.names = FALSE)
+all_arthropod_sequences <- qc_tsv_arthropod_primary
+
 qc_tsv_arthropod_primary <- qc_tsv_arthropod_primary %>% filter(assignment == "primary") %>% group_by(pid) %>% arrange(-rep_count_primary) %>% slice_head(n = 1)
 non_arth_summary <- table(qc_tsv_arthropod_primary %>% filter(assignment == "primary") %>% pull(p_primary))
 knitr::kable(non_arth_summary, col.names = c("Primary hit", "Number"), format = "html") %>%
@@ -1470,6 +1477,8 @@ cat(paste("Number of retained samples:", length(unique(qc_tsv_arthropod_primary$
           "\nRetained samples with no taxonomy:", length(unique(qc_tsv_arthropod_primary %>% filter(p_primary == "None") %>% pull(pid))),
           "\n\nEach retreived sample has only one sequence:", unique(qc_tsv_arthropod_primary$pid) %>% length() == nrow(qc_tsv_arthropod_primary)
           ))
+```
+```{r categorise_data}
 # Categorise the data
 qc_tsv_arthropod_primary <- qc_tsv_arthropod_primary %>%
   mutate(category = case_when(
@@ -1480,12 +1489,12 @@ qc_tsv_arthropod_primary <- qc_tsv_arthropod_primary %>%
     rep_count_primary >= 50 & no_conflicting_sequences > 1 & rep_count_primary <= 200 & best_secondary_read_count <= 5 ~ 5, # NO MORE THAN 4 NON-CONFLICTING SECONDARY READS OF A SEQUENCE 
     rep_count_primary > 200 & no_conflicting_sequences > 1 & tax_conflict_read_count <= 5 ~ 6,
     rep_count_primary >= 50 & no_conflicting_sequences > 1 & rep_count_primary <= 200 & tax_conflict_read_count <= 5 ~ 7, # NO MORE THAN 4 CONFLICTING SECONDARY READS OF A SINGLE SEQUENCE
-    rep_count_primary > 200 & best_secondary_read_count >= 5 ~ 8,
-    rep_count_primary >= 50 & rep_count_primary <= 200 & best_secondary_read_count > 5 ~ 9,
-    rep_count_primary >= 5 & rep_count_primary <= 49 & tax_conflict_read_count <= 5 ~ 10, # Low read count but no conflicting reads 
-    rep_count_primary >= 5 & rep_count_primary <= 49 & best_secondary_read_count > 1 ~ 11, # Any secondary reads in low read samples
-    rep_count_primary >= 5 & rep_count_primary <= 49 & tax_conflict_read_count > 1 ~ 11, # Any secondary reads in low read samples
-    TRUE ~ 12  # To check if anything goes wrong with filtering 
+    rep_count_primary > 200 & best_secondary_read_count >= 5 ~ 9,
+    rep_count_primary >= 50 & rep_count_primary <= 200 & best_secondary_read_count > 5 ~ 10,
+    rep_count_primary >= 5 & rep_count_primary <= 49 & tax_conflict_read_count <= 5 ~ 11, # Low read count but no conflicting reads 
+    rep_count_primary >= 5 & rep_count_primary <= 49 & best_secondary_read_count > 1 ~ 12, # Any secondary reads in low read samples
+    rep_count_primary >= 5 & rep_count_primary <= 49 & tax_conflict_read_count > 1 ~ 12, # Any secondary reads in low read samples
+    TRUE ~ 13  # To check if anything goes wrong with filtering 
   )) %>%
   mutate(category_explanation = case_when(
     category == 1 ~ "Only one sequence with more than 200 reads, no secondary sequence detected",
@@ -1495,28 +1504,86 @@ qc_tsv_arthropod_primary <- qc_tsv_arthropod_primary %>%
     category == 5 ~ "Dominant sequence with 50 to 200 reads, non-conflicting secondary sequences with 5 or less reads",
     category == 6 ~ "Dominant sequence with more than 200 reads, conflicting secondary sequences with 5 or less reads",
     category == 7 ~ "Dominant sequence with 50 to 200 reads, conflicting secondary sequences with 5 or less read",
-    category == 8 ~ "Dominant sequence with more than 200 reads, secondary sequences with more than 5 read support",
-    category == 9 ~ "Dominant sequence with 50 to 200 reads, secondary sequences with more than 5 read support",
-    category == 10 ~ "Dominant sequence with 5 or more but less than 50 reads, non-conflicting secondary sequences with less than 5 reads",
-    category == 11 ~ "Dominant sequence with more than 5 but less than 50 reads, any other secondary reads present",
-    category == 12 ~ "no_category"  # To check if anything goes wrong with filtering 
+    category == 9 ~ "Dominant sequence with more than 200 reads, secondary sequences with more than 5 read support",
+    category == 10 ~ "Dominant sequence with 50 to 200 reads, secondary sequences with more than 5 read support",
+    category == 11 ~ "Dominant sequence with 5 or more but less than 50 reads, non-conflicting secondary sequences with less than 5 reads",
+    category == 12 ~ "Dominant sequence with more than 5 but less than 50 reads, any other secondary reads present",
+    category == 13 ~ "no_category"  # To check if anything goes wrong with filtering 
   )) %>%
   mutate(category_decision = case_when(
     category %in% c(1:7) ~ "YES",
-    category %in% c(8:11) ~ "NO",
-    category == 12 ~ "no_category"
+    category %in% c(9:12) ~ "NO",
+    category == 13 ~ "no_category"
   ))
 
+# Salvage samples
+metadata_rejected <- qc_tsv_arthropod_primary %>% filter(category_decision == "NO")
+
+all_arthropod_sequences_rejected <- all_arthropod_sequences %>% filter(pid %in% metadata_rejected$pid)
+
+all_arthropod_sequences_rejected <- merge(all_arthropod_sequences_rejected,
+                                          (metadata_rejected %>% 
+                                             dplyr::select(pid, no_conflicting_sequences, best_secondary_read_count,tax_conflict_read_count, category)),
+                                          by = "pid")
+
+five_support <- all_arthropod_sequences_rejected %>% filter(rep_count_primary >= 5)
+
+conflicts <- conflicting_arthropods_tax
+conflicts_rejected <- conflicts %>% filter(pid %in% five_support$pid)
+
+five_support <- five_support %>%
+  mutate(conflicts = if_else(pid %in% conflicts_rejected$pid, "YES", "NO"))
+
+# Get only samples that are non-conflicting at family or order level
+non_conflicting <- five_support %>% filter(conflicts == "NO")
+
+result <- non_conflicting %>%
+  group_by(pid) %>%
+  group_modify(~ {
+    selected_row <- .x %>%
+      filter(assignment == "primary") %>%
+      slice_max(rep_count_primary, n = 1, with_ties = FALSE)
+    selected_sequence <- selected_row$sequence
+    other_rows <- .x %>%
+      filter(!(id %in% selected_row$id)) %>%
+      mutate(levenshtein_distance = stringdist(sequence, selected_sequence, method = "lv"))
+    other_rows %>%
+      dplyr::select(id, assignment, levenshtein_distance, seq_length, rep_count_primary, o_primary, f_primary, g_primary, s_primary, partner_plate)
+  })
+
+result <- result %>% 
+  ungroup() %>%
+  mutate(two_percent_seq_length = seq_length * 0.02) 
+
+filtered_result <- result %>%
+  group_by(pid) %>%
+  filter(all(two_percent_seq_length > levenshtein_distance)) %>%
+  ungroup()
+
+saved_samples <- non_conflicting %>% filter(pid %in% filtered_result$pid) %>% filter(assignment == "primary") %>%
+  group_by(pid) %>% arrange(-rep_count_primary) %>% slice_head(n = 1) %>% pull(pid)
+# Change the category
+qc_tsv_arthropod_primary <- qc_tsv_arthropod_primary %>%
+  mutate(
+    category = if_else(pid %in% saved_samples, 8, category),
+    category_explanation = if_else(pid %in% saved_samples, 
+                                   "Primary sequence retained - secondary sequence non-conflicting", 
+                                   category_explanation),
+    category_decision = if_else(pid %in% saved_samples, "YES", category_decision)
+  )
+
+# Summary!
 summary1 <- table(qc_tsv_arthropod_primary$category) %>% as.data.frame()
 summary2 <- table(qc_tsv_arthropod_primary$category_explanation) %>% as.data.frame()
 summary_merge <- merge(summary2,summary1, by = "Freq")
 summary_merge <- summary_merge %>%
   mutate(Decision = case_when(
-    Var1.y %in% c(1:7) ~ "YES",
-    Var1.y %in% c(8:11) ~ "NO",
-    Var1.y == 12 ~ "no_category"
+    Var1.y %in% c(1:8) ~ "YES",
+    Var1.y %in% c(9:12) ~ "NO",
+    Var1.y == 13 ~ "no_category"
   ))
 colnames(summary_merge) <- c("Number of samples", "Description", "Category", "Decision")
+
 knitr::kable(summary_merge %>% arrange(Category), format = "html") %>% 
   kableExtra::kable_styling(full_width = FALSE, position = "center")
 
@@ -1526,6 +1593,7 @@ knitr::kable(table(qc_tsv_arthropod_primary$category_decision) %>% as.data.frame
 
 cat(paste(100-(nrow(qc_tsv_arthropod_primary)*100/total_sample_number), "% OF SAMPLES EXCLUDED [all samples]"))
 cat(paste(100-(nrow((qc_tsv_arthropod_primary %>% filter(category_decision == "YES")))*100/total_sample_number), "% OF SAMPLES EXCLUDED [only approved samples]"))
+
 # Update batch metadata 
 summary_wide <- summary_merge %>%
   dplyr::select(`Number of samples`, Category) %>%
@@ -1533,6 +1601,7 @@ summary_wide <- summary_merge %>%
 sample_metadata <- cbind(sample_metadata, summary_wide)
 # Save metadata 
 csv_file_path <- paste(output_path, "read_summary_metadata_", batch_no, ".csv", sep = "")
+# sample_metadata <- unlist(sample_metadata) %>% as.data.frame()
 write.csv(sample_metadata, file = csv_file_path, row.names = FALSE) 
 ```
 ### Plate heatmaps - retained samples
@@ -1544,7 +1613,7 @@ generalHeatmap <- function(variable, title){
     ggplot(aes(x = Forward.UMI.Label, y = Reverse.UMI.Label)) + 
     geom_tile(aes_string(fill = variable), color = "#C1CDCD") +
     scale_fill_gradient(low = "#0000FF", high = "#FFD700", na.value = "white") +
-    labs(title = "Heatmap of Read Counts by UMI Plate Position\n[only retained samples, controls excluded]",
+    labs(title = "Heatmap of Read Counts by UMI Plate Position",
          x = "Forward UMI Label",
          y = "Reverse UMI Label",
          fill = title) +
@@ -1557,22 +1626,53 @@ generalHeatmap <- function(variable, title){
     facet_grid(partner_plate ~ ., scales = "free_y", space = "free", switch = "y",
                labeller = labeller(Group = function(x) paste0("Group: ", x)))
 }
+cat("No. reads sequenced:")
 sample_stats_filtered <- sample_stats %>% filter(Label %in% (qc_tsv_arthropod_primary %>% pull(pid))) %>% dplyr::select(Label, Count)
 sample_stats_filtered$pid <- sample_stats_filtered$Label
 qc_tsv_merged_primary_only <- merge(qc_tsv_arthropod_primary, sample_stats_filtered, by = "pid")
 generalHeatmap("Count", "No. Reads")
 ```
 ```{r heatmap2, fig.align='center', fig.width=14, fig.height=14}
+cat("No. reads supporting the primary sequence\n[all samples that passed the QC]:")
 sample_stats_filtered <- sample_stats %>% filter(Label %in% (qc_tsv_arthropod_primary %>% pull(pid))) %>% dplyr::select(Label, Count)
 sample_stats_filtered$pid <- sample_stats_filtered$Label
 qc_tsv_merged_primary_only <- merge(qc_tsv_arthropod_primary, sample_stats_filtered, by = "pid")
-generalHeatmap("rep_count_primary", "No, Primary Sequences")
+generalHeatmap("rep_count_primary", "No. Primary Sequences")
 ```
 ```{r heatmap3, fig.align='center', fig.width=14, fig.height=14}
+cat("No. reads supporting the primary sequence\n[only samples with satisfactory confidence categories]:")
 sample_stats_filtered <- sample_stats %>% filter(Label %in% (qc_tsv_arthropod_primary %>% filter(category_decision == "YES") %>% pull(pid))) %>% dplyr::select(Label, Count)
 sample_stats_filtered$pid <- sample_stats_filtered$Label
 qc_tsv_merged_primary_only <- merge(qc_tsv_arthropod_primary, sample_stats_filtered, by = "pid")
-generalHeatmap("rep_count_primary", "No, Primary Sequences")
+generalHeatmap("rep_count_primary", "No. Primary Sequences")
+```
+```{r heatmap4, fig.align='center', fig.width=14, fig.height=14}
+cat("Confidence categories\n[all samples that passed the QC]:")
+sample_stats_filtered <- sample_stats %>% filter(Label %in% (qc_tsv_arthropod_primary %>% pull(pid))) %>% dplyr::select(Label, Count)
+sample_stats_filtered$pid <- sample_stats_filtered$Label
+qc_tsv_merged_primary_only <- merge(qc_tsv_arthropod_primary, sample_stats_filtered, by = "pid")
+qc_tsv_merged_primary_only$category_num <- as.numeric(qc_tsv_merged_primary_only$category)
+qc_tsv_merged_primary_only$category <- factor(qc_tsv_merged_primary_only$category, 
+                                              levels = sort(unique(qc_tsv_merged_primary_only$category)))
+
+qc_tsv_merged_primary_only %>%
+  ggplot(aes(x = Forward.UMI.Label, y = Reverse.UMI.Label)) +
+  geom_tile(aes(fill = category), color = "#C1CDCD") +
+  scale_fill_manual(values = c(
+    rev(c("#826e01", "#b89b00", "#cfb002", "#e8c400", "#FFD700", "#f5d422", "#f7db43", "#ffea78")), "#5e5ef7", "#3535f0", "#0000FF", "#0202a8"
+    ),
+                    name = "Confidence Category") +
+  labs(title = "Heatmap of Confidence Categories by UMI Plate Position",
+       x = "Forward UMI Label",
+       y = "Reverse UMI Label") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1),
+        panel.grid = element_blank(),
+        strip.text = element_text(size = 10),
+        plot.title = element_text(hjust = 0.5),
+        strip.placement = "outside") +
+  facet_grid(partner_plate ~ ., scales = "free_y", space = "free", switch = "y",
+             labeller = labeller(Group = function(x) paste0("Group: ", x)))
 ```
 ```{r length_histogram, fig.align='center', fig.width=2.5, fig.height=2}
 # Prepare for saving
@@ -1587,33 +1687,6 @@ qc_tsv_arthropod_primary %>% filter(category_decision == "YES") %>%
     axis.title = element_text(size = 7),
     axis.text = element_text(size = 6)
   )
-```
-```{r generating_output_files}
-# Create fasta file 
-sequences_filtered <- DNAStringSet(qc_tsv_arthropod_primary$sequence)
-names(sequences_filtered) <- qc_tsv_arthropod_primary$pid # What should be the name?? 
-# Save the fasta file 
-fasta_file_path <- paste(output_path, "filtered_sequences_", batch_no, ".fasta", sep = "")
-writeXStringSet(sequences_filtered, filepath = fasta_file_path)
-
-# Filtered fastas 
-qc_tsv_arthropod_primaryBOLD <- qc_tsv_arthropod_primary %>% filter(category_decision == "YES")
-sequences_filtered_BOLDfiltered <- DNAStringSet(qc_tsv_arthropod_primaryBOLD$sequence)
-names(sequences_filtered_BOLDfiltered) <- qc_tsv_arthropod_primaryBOLD$pid # What should be the name?? 
-# Save the fasta file 
-fasta_file_path <- paste(output_path, "BOLD_filtered_sequences_", batch_no, ".fasta", sep = "")
-writeXStringSet(sequences_filtered_BOLDfiltered, filepath = fasta_file_path)
-
-qc_tsv_arthropod_primary_save <- qc_tsv_arthropod_primary %>% dplyr::select(-id, -pid2, -sample)
-csv_file_path <- paste(output_path, "filtered_metadata_", batch_no, ".csv", sep = "")
-write.csv(qc_tsv_arthropod_primary_save, file = csv_file_path, row.names = FALSE)
-
-qc_tsv_arthropod_primaryBOLD_save <- qc_tsv_arthropod_primaryBOLD %>% dplyr::select(-id, -pid2, -sample)
-csv_file_path <- paste(output_path, "BOLDfiltered_metadata_", batch_no, ".csv", sep = "")
-write.csv(qc_tsv_arthropod_primaryBOLD_save, file = csv_file_path, row.names = FALSE)
-
-cat(paste("Final fasta file succesfully saved:", fasta_file_path,
-          "\nFinal metadata file succesfully saved:", csv_file_path))
 ```
 <b>The report and output files have been successfully generated!</b><br>
 
@@ -1679,6 +1752,38 @@ write.csv(retained_partners, file = csv_file_path, row.names = FALSE)
 csv_file_path <- paste(output_path, "retained_umi_percentage_", batch_no, ".csv", sep = "")
 write.csv(retained_umi, file = csv_file_path, row.names = FALSE)
 ```
+
+```{r generating_output_files}
+# Sequences
+sequences_filtered <- DNAStringSet(qc_tsv_arthropod_primary$sequence)
+names(sequences_filtered) <- qc_tsv_arthropod_primary$pid # What should be the name?? 
+# Save the fasta file 
+fasta_file_path <- paste(output_path, "filtered_sequences_", batch_no, ".fasta", sep = "")
+writeXStringSet(sequences_filtered, filepath = fasta_file_path)
+# Filtered fastas 
+qc_tsv_arthropod_primaryBOLD <- qc_tsv_arthropod_primary %>% filter(category_decision == "YES")
+sequences_filtered_BOLDfiltered <- DNAStringSet(qc_tsv_arthropod_primaryBOLD$sequence)
+names(sequences_filtered_BOLDfiltered) <- qc_tsv_arthropod_primaryBOLD$pid # What should be the name?? 
+# Save the fasta file 
+fasta_file_path <- paste(output_path, "BOLD_filtered_sequences_", batch_no, ".fasta", sep = "")
+writeXStringSet(sequences_filtered_BOLDfiltered, filepath = fasta_file_path)
+
+# Metadata
+plate_info <- retained_samples 
+colnames(plate_info) <- c("Sample.Plate.ID", "No.Samples", "No.Samples.postQC", "No.conf.Samples", "Percentage.confSamples")
+qc_tsv_arthropod_primary <- merge(qc_tsv_arthropod_primary, plate_info, by = "Sample.Plate.ID", all = TRUE)
+
+qc_tsv_arthropod_primary_save <- qc_tsv_arthropod_primary %>% dplyr::select(-id, -pid2, -sample)
+csv_file_path <- paste(output_path, "filtered_metadata_", batch_no, ".csv", sep = "")
+write.csv(qc_tsv_arthropod_primary_save, file = csv_file_path, row.names = FALSE)
+
+qc_tsv_arthropod_primaryBOLD_save <- qc_tsv_arthropod_primaryBOLD %>% dplyr::select(-id, -pid2, -sample)
+csv_file_path <- paste(output_path, "BOLDfiltered_metadata_", batch_no, ".csv", sep = "") 
+write.csv(qc_tsv_arthropod_primaryBOLD_save, file = csv_file_path, row.names = FALSE)
+
+cat(paste("Final fasta file succesfully saved:", fasta_file_path,
+          "\nFinal metadata file succesfully saved:", csv_file_path))
+```
 <b>The plates with low number of reads and retained samples should be examined!</b>
 
 ```{r}
@@ -1695,7 +1800,7 @@ if (length(non_bos_contaminated_n_cont) > 0) {
 }
 ```
 ### Plate heatmaps - all [partner and UMI plates]
-```{r all_plate_heatmaps), fig.width=12, fig.height=2.3}
+```{r all_plate_heatmaps, fig.width=12, fig.height=2.3}
 unique_plates <- stats_table_comb %>% arrange(partner_plate) %>% pull(partner_plate) %>% unique()
 plot_list_counts <- list()
 heatmapPlate(unique_plates, stats_table_comb, plot_list_counts)
@@ -1721,6 +1826,113 @@ for (umi in unique_umi_plates) {
     geom_tile(data = (umi_data %>% filter(sample_type != "sample")),
               aes(fill = Count), color = "#54FF9F", linewidth = 0.5) +
     scale_fill_gradient(low = "#0000FF", high = "#FFD700", na.value = "white", limits = c(global_min_count, global_max_count)) +
+    labs(x = "Plate Column",
+         y = "Plate Row",
+         fill = "Read Count",
+         title = umi) +
+    theme_minimal() +
+    theme(
+    plot.title = element_text(size = 7), 
+    axis.title = element_text(size = 7),
+    axis.text = element_text(size = 6),
+    axis.text.x = element_text(hjust = 1),
+          panel.grid = element_blank(),
+          strip.text = element_text(size = 10),
+          strip.placement = "outside") 
+  
+  # Store the plot in the list with the group name as the key
+  plot_list_countsUMI[[umi]] <- plot
+}
+names(plot_list_countsUMI) <- unique_umi_plates
+for (plot in plot_list_countsUMI) {
+  print(plot)
+}
+```
+```{r plate_categories, fig.width=12, fig.height=2.3}
+qc_tsv_arthropod_primary$category <- as.factor(qc_tsv_arthropod_primary$category)
+
+heatmapPlate_cat <- function(plateIDs, statsDF, empty_list){
+  for (i in seq_along(plateIDs)) {
+    plate <- plateIDs[i]
+    group_data <- statsDF %>% filter(Sample.Plate.ID == plate)
+    plot <- ggplot(group_data, aes(y = factor(plate_column, levels = rev(LETTERS[1:8])), x = factor(plate_row, levels = 1:12))) +
+      geom_tile(aes(fill = factor(category)), color = "#C1CDCD") +
+      # geom_tile(data = (group_data %>% filter(sample_type == "control")),
+      #           aes(fill = Count), color = "#54FF9F", linewidth = 0.5) +
+      scale_fill_manual(values = c(
+    rev(c("#826e01", "#b89b00", "#cfb002", "#e8c400", "#FFD700", "#f5d422", "#f7db43", "#ffea78")), "#5e5ef7", "#3535f0", "#0000FF", "#0202a8"
+    ),
+                    name = "Confidence Category", 
+    breaks = c(
+      "1", "2", "3",
+      "4", "5", "6",
+      "7", "8", "9",
+      "10", "11", "12"
+    )) +
+      labs(title = paste("Plate:", plate),
+           x = "Plate Column",
+           y = "Plate Row",
+           fill = "Count") +
+      theme(axis.text.x = element_text(angle = 90, hjust = 1),
+            panel.grid = element_blank(),
+            strip.text = element_text(size = 10),
+            plot.title = element_text(size = 7), 
+            axis.title = element_text(size = 7),
+            axis.text = element_text(size = 6)) + theme_minimal()
+    if (i != length(plateIDs)) {
+      plot <- plot + guides(fill = "none")
+    }
+    empty_list[[plate]] <- plot
+  }
+  # Display the plots in pairs or triplets
+  plot_index <- 1
+  total_plots <- length(empty_list)
+  while (plot_index <= total_plots) {
+    if (plot_index == total_plots) {
+      plots_to_display <- list(empty_list[[plot_index]])
+    } else {
+      plots_to_display <- empty_list[plot_index:min(plot_index + 1, total_plots)]
+    }
+    do.call(grid.arrange, c(plots_to_display, ncol = 2))
+    plot_index <- plot_index + 2
+  }
+}
+
+unique_plates <- stats_table_comb %>% arrange(partner_plate) %>% pull(partner_plate) %>% unique()
+# unique_plates <- qc_tsv_arthropod_primary %>% arrange(Sample.Plate.ID) %>% pull(Sample.Plate.ID) %>% unique()
+plot_list_counts <- list()
+heatmapPlate_cat(unique_plates, qc_tsv_arthropod_primary, plot_list_counts)
+```
+```{r all_plate_heatmaps3, fig.align='center', fig.width=6, fig.height=2.5}
+# Extract unique UMI plates
+# unique_umi_plates <- stats_table_comb %>% arrange(UMI.Plate.ID) %>% pull(UMI.Plate.ID) %>% unique()
+# Get UMI plate positions 
+stats_table_comb <- merge(qc_tsv_arthropod_primary, (stats_table_comb %>% dplyr::select(Forward.UMI.Label, Reverse.UMI.Label, Well.Coordinate)), by = c("Reverse.UMI.Label", "Forward.UMI.Label")) 
+stats_table_comb <- merge(stats_table_comb, (umi_plates %>% dplyr::select(-Count, -UMI.Plate.ID)), by = c("Reverse.UMI.Label", "Forward.UMI.Label")) 
+stats_table_comb <- stats_table_comb %>% mutate(
+    umi_row = substr(Well.Coordinate, 1, 1),
+    umi_column = substr(Well.Coordinate, 2, 3)
+  )
+# Calculate global min and max for the color scale
+# global_min_count <- min(stats_table_comb$Count, na.rm = TRUE)
+# global_max_count <- max(stats_table_comb$Count, na.rm = TRUE)
+# Initialize an empty list to store the plots
+plot_list_countsUMI <- list()
+# Loop through each unique group to create and store the plots
+for (umi in unique_umi_plates) {
+  umi_data <- stats_table_comb %>% filter(UMI.Plate.ID == umi)
+  plot <- umi_data %>% ggplot(aes(x = factor(umi_column, levels = 1:24), y = factor(umi_row, levels = rev(LETTERS[1:16])), fill = factor(category))) +
+    geom_tile(color = "white") +
+    scale_fill_manual(values = c(
+    rev(c("#826e01", "#b89b00", "#cfb002", "#e8c400", "#FFD700", "#f5d422", "#f7db43", "#ffea78")), "#5e5ef7", "#3535f0", "#0000FF", "#0202a8"
+    ),
+                    name = "Confidence Category", 
+    breaks = c(
+      "1", "2", "3",
+      "4", "5", "6",
+      "7", "8", "9",
+      "10", "11", "12"
+    )) +
     labs(x = "Plate Column",
          y = "Plate Row",
          fill = "Read Count",
