@@ -1883,54 +1883,54 @@ plot_list_counts <- list()
 heatmapPlate_cat(unique_plates, qc_tsv_arthropod_primary, plot_list_counts)
 ```
 ```{r all_plate_heatmaps3, fig.align='center', fig.width=6, fig.height=2.5}
-# Extract unique UMI plates
-# unique_umi_plates <- stats_table_comb %>% arrange(UMI.Plate.ID) %>% pull(UMI.Plate.ID) %>% unique()
-# Get UMI plate positions 
-stats_table_comb <- merge(qc_tsv_arthropod_primary, (stats_table_comb %>% dplyr::select(Forward.UMI.Label, Reverse.UMI.Label, Well.Coordinate)), by = c("Reverse.UMI.Label", "Forward.UMI.Label")) 
-stats_table_comb <- merge(stats_table_comb, (umi_plates %>% dplyr::select(-Count, -UMI.Plate.ID)), by = c("Reverse.UMI.Label", "Forward.UMI.Label")) 
-stats_table_comb <- stats_table_comb %>% mutate(
-    umi_row = substr(Well.Coordinate, 1, 1),
-    umi_column = substr(Well.Coordinate, 2, 3)
-  )
-# Calculate global min and max for the color scale
-# global_min_count <- min(stats_table_comb$Count, na.rm = TRUE)
-# global_max_count <- max(stats_table_comb$Count, na.rm = TRUE)
-# Initialize an empty list to store the plots
-plot_list_countsUMI <- list()
-# Loop through each unique group to create and store the plots
-for (umi in unique_umi_plates) {
-  umi_data <- stats_table_comb %>% filter(UMI.Plate.ID == umi)
-  plot <- umi_data %>% ggplot(aes(x = factor(umi_column, levels = 1:24), y = factor(umi_row, levels = rev(LETTERS[1:16])), fill = factor(category))) +
-    geom_tile(color = "white") +
-    scale_fill_manual(values = c(
-    rev(c("#826e01", "#b89b00", "#cfb002", "#e8c400", "#FFD700", "#f5d422", "#f7db43", "#ffea78")), "#5e5ef7", "#3535f0", "#0000FF", "#0202a8"
-    ),
-                    name = "Confidence Category", 
-    breaks = c(
-      "1", "2", "3",
-      "4", "5", "6",
-      "7", "8", "9",
-      "10", "11", "12"
-    )) +
-    labs(x = "Plate Column",
-         y = "Plate Row",
-         fill = "Read Count",
-         title = umi) +
-    theme_minimal() +
-    theme(
-    plot.title = element_text(size = 7), 
-    axis.title = element_text(size = 7),
-    axis.text = element_text(size = 6),
-    axis.text.x = element_text(hjust = 1),
-          panel.grid = element_blank(),
-          strip.text = element_text(size = 10),
-          strip.placement = "outside") 
-  
-  # Store the plot in the list with the group name as the key
-  plot_list_countsUMI[[umi]] <- plot
-}
-names(plot_list_countsUMI) <- unique_umi_plates
-for (plot in plot_list_countsUMI) {
-  print(plot)
-}
+# # Extract unique UMI plates
+# # unique_umi_plates <- stats_table_comb %>% arrange(UMI.Plate.ID) %>% pull(UMI.Plate.ID) %>% unique()
+# # Get UMI plate positions 
+# stats_table_comb <- merge(qc_tsv_arthropod_primary, (stats_table_comb %>% dplyr::select(Forward.UMI.Label, Reverse.UMI.Label, Well.Coordinate)), by = c("Reverse.UMI.Label", "Forward.UMI.Label")) 
+# stats_table_comb <- merge(stats_table_comb, (umi_plates %>% dplyr::select(-Count, -UMI.Plate.ID)), by = c("Reverse.UMI.Label", "Forward.UMI.Label")) 
+# stats_table_comb <- stats_table_comb %>% mutate(
+#     umi_row = substr(Well.Coordinate, 1, 1),
+#     umi_column = substr(Well.Coordinate, 2, 3)
+#   )
+# # Calculate global min and max for the color scale
+# # global_min_count <- min(stats_table_comb$Count, na.rm = TRUE)
+# # global_max_count <- max(stats_table_comb$Count, na.rm = TRUE)
+# # Initialize an empty list to store the plots
+# plot_list_countsUMI <- list()
+# # Loop through each unique group to create and store the plots
+# for (umi in unique_umi_plates) {
+#   umi_data <- stats_table_comb %>% filter(UMI.Plate.ID == umi)
+#   plot <- umi_data %>% ggplot(aes(x = factor(umi_column, levels = 1:24), y = factor(umi_row, levels = rev(LETTERS[1:16])), fill = factor(category))) +
+#     geom_tile(color = "white") +
+#     scale_fill_manual(values = c(
+#     rev(c("#826e01", "#b89b00", "#cfb002", "#e8c400", "#FFD700", "#f5d422", "#f7db43", "#ffea78")), "#5e5ef7", "#3535f0", "#0000FF", "#0202a8"
+#     ),
+#                     name = "Confidence Category", 
+#     breaks = c(
+#       "1", "2", "3",
+#       "4", "5", "6",
+#       "7", "8", "9",
+#       "10", "11", "12"
+#     )) +
+#     labs(x = "Plate Column",
+#          y = "Plate Row",
+#          fill = "Read Count",
+#          title = umi) +
+#     theme_minimal() +
+#     theme(
+#     plot.title = element_text(size = 7), 
+#     axis.title = element_text(size = 7),
+#     axis.text = element_text(size = 6),
+#     axis.text.x = element_text(hjust = 1),
+#           panel.grid = element_blank(),
+#           strip.text = element_text(size = 10),
+#           strip.placement = "outside") 
+#   
+#   # Store the plot in the list with the group name as the key
+#   plot_list_countsUMI[[umi]] <- plot
+# }
+# names(plot_list_countsUMI) <- unique_umi_plates
+# for (plot in plot_list_countsUMI) {
+#   print(plot)
+# }
 ```
