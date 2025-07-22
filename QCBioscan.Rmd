@@ -45,9 +45,9 @@ output_path <- env_list$output_path
 batch_no <- env_list$batch_no
 
 # For quick manual processing:
-# batch_no <- "batch_30"
-# batch_path <- ("/lustre/scratch126/tol/teams/lawniczak/users/aw43/bioscan_processing/mbrave_batch_data/batch_30/")
-# output_path <- ("/lustre/scratch126/tol/teams/lawniczak/users/aw43/bioscan_processing/mbrave_batch_data/batch_30/")
+# batch_no <- "batch30"
+# batch_path <- ("/nfs/users/nfs_a/aw43/bioscan_qc/mbrave_data/batch30/")
+# output_path <- ("/nfs/users/nfs_a/aw43/bioscan_qc/mbrave_data/batch30/")
 ```
 ```{r load_libraries}
 # Load required libraries; All libraries should be automatically installed in the environment
@@ -58,7 +58,7 @@ load_pkgs <- function(pkg, bioconductor = FALSE) {
 }
 # CRAN packages
 cran_pkgs <- c(
-  "BiocManager", "tidyverse", "RColorBrewer", "scales", "kableExtra",
+  "tidyverse", "RColorBrewer", "scales", "kableExtra",
   "here", "dplyr", "cluster", "reshape", "reshape2", "stringdist", "pander",
   "ggiraph", "e1071", "gridExtra", "knitr", "patchwork", "colorspace", "purrr"
 )
@@ -99,7 +99,10 @@ n_cont_stats <- stats_upload(patch = batch_path, sample = n_cont_file)
 p_cont_stats <- stats_upload(patch = batch_path, sample = p_cont_file)
 
 # Upload UMI plate index info
-umi_plates <- read.csv("/lustre/scratch126/tol/teams/lawniczak/users/aw43/bioscan_processing/required_files/UMI_plates.csv")
+# umi_plates <- read.csv("/lustre/scratch126/tol/teams/lawniczak/users/aw43/bioscan_processing/required_files/UMI_plates.csv")
+umi_plates <- read.csv(
+  "/nfs/users/nfs_a/aw43/bioscan_qc/BIOSCAN_umi_plates.csv"
+)
 ```
 ```{r check_files}
 cat(paste(batch_no, "\nQC REPORT",
@@ -516,22 +519,6 @@ for (i in 1:nrow(cont_count)) {
     cat(paste(sample_plate_id, "Positive control failed.\n", "Observed number of reads:", observed, "Expected:", expected, "\n\n"))
   }
 }
-# # Loop through plates to detect plates with low read count AND low p_cont reads
-# any_true <- FALSE
-# failed_plates <- vector()
-# for (plate in 1:nrow(obs_p_cont_count)) {
-#   if (obs_p_cont_count$Sample.Plate.ID[plate] %in% low_read_plates) {
-#     # If the condition is TRUE, print the Sample.Plate.ID and update the flag
-#     cat(obs_p_cont_count$Sample.Plate.ID[plate], "\n")
-#     any_true <- TRUE
-#     failed_plates[plate] <- obs_p_cont_count$Sample.Plate.ID[plate]
-#   }
-# }
-# if (any_true) {
-#   cat("The above plates have lower than expected number of reads \nAND failed positive controls. \nTHESE PLATES NEED TO BE EXAMINED FURTHER")
-# } else {
-#   cat("This batch does not contain plates that have lower than expected number of reads in samples\nAND positive controls.")
-# }
 ```
 <b> Low-quality plates are displayed here. All the other plates are plotted in the last part of this report. </b> <br>
 Green squares: controls [any kind]<br><br>
@@ -1195,8 +1182,6 @@ sample_metadata <- cbind(sample_metadata, data.frame(no_replaced_non_arthropods 
 anopheles_pids <- qc_tsv_arthropod_primary %>% filter(otu_primary == "BOLD:AAA3436") %>% pull(pid) %>% unique()
 anopheles_pids <- unique(c(anopheles_pids, (qc_tsv_arthropod_primary %>% filter(g_primary == "Anopheles") %>% pull(pid))))
 
-# GET THE SEQUENCES AND SCREEN FOR SIMILAR ONES - EXCLUDE THEM!
-
 # anopheles_samples_all <- qc_tsv_arthropod_primary %>% filter(pid %in% anopheles_pids)
 anopheles_samples_all <- qc_tsv_arthropod_primary %>% filter(otu_primary == "BOLD:AAA3436" | g_primary == "Anopheles")
 # How many per plate / batch
@@ -1527,16 +1512,12 @@ all_arthropod_sequences_rejected <- merge(all_arthropod_sequences_rejected,
                                           by = "pid")
 
 five_support <- all_arthropod_sequences_rejected %>% filter(rep_count_primary >= 5)
-
 conflicts <- conflicting_arthropods_tax
 conflicts_rejected <- conflicts %>% filter(pid %in% five_support$pid)
-
 five_support <- five_support %>%
   mutate(conflicts = if_else(pid %in% conflicts_rejected$pid, "YES", "NO"))
-
 # Get only samples that are non-conflicting at family or order level
 non_conflicting <- five_support %>% filter(conflicts == "NO")
-
 result <- non_conflicting %>%
   group_by(pid) %>%
   group_modify(~ {
@@ -1550,16 +1531,13 @@ result <- non_conflicting %>%
     other_rows %>%
       dplyr::select(id, assignment, levenshtein_distance, seq_length, rep_count_primary, o_primary, f_primary, g_primary, s_primary, partner_plate)
   })
-
 result <- result %>% 
   ungroup() %>%
   mutate(two_percent_seq_length = seq_length * 0.02) 
-
 filtered_result <- result %>%
   group_by(pid) %>%
   filter(all(two_percent_seq_length > levenshtein_distance)) %>%
   ungroup()
-
 saved_samples <- non_conflicting %>% filter(pid %in% filtered_result$pid) %>% filter(assignment == "primary") %>%
   group_by(pid) %>% arrange(-rep_count_primary) %>% slice_head(n = 1) %>% pull(pid)
 # Change the category
@@ -1713,6 +1691,7 @@ retained_partners_all <- qc_tsv_arthropod_primary %>%
   pull(partner_plate) %>% table() %>% as.data.frame() %>% arrange(-Freq)
 confident_partners <- qc_tsv_arthropod_primary %>% filter(category_decision == "YES") %>%
   pull(partner_plate) %>% table() %>% as.data.frame() %>% arrange(-Freq)
+
 retained_partners <- merge(retained_partners_all, confident_partners, by = ".")
 colnames(retained_partners) <- c("Partner", "No. samples post-QC", "No. confident samples")
 sample_stats <- sample_stats %>% mutate(partner_plate = str_extract(Label, "^[^_]+"))
